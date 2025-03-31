@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eef5ff;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #004080, #008060);
+            padding: 15px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .otp-box {
+            display: inline-block;
+            background: #004080;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #008060;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+            .cta-button:hover {
+                background: #006050;
+            }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">🎓 College Management System - OTP Verification 📚</div>
+        <p>Hello,</p>
+        <p>Your One-Time Password (OTP) for account verification is:</p>
+        <div class="otp-box">{{OTP}}</div>
+        <p>This OTP is valid for <strong>5 minutes</strong>. Please do not share it with anyone.</p>
+        <p class="footer">If you did not request this OTP, please ignore this email.</p>
+        <p class="footer">© 2025 College Management System. All Rights Reserved.</p>
+    </div>
+</body>
+</html>
