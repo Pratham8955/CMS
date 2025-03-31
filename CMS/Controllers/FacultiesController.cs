@@ -15,11 +15,11 @@ namespace CMS.Controllers
     [ApiController]
     public class FacultiesController : ControllerBase
     {
-        private readonly CmsContext _context;
+        private readonly CmsproContext _context;
         private readonly IConfiguration _configuration;
 
 
-        public FacultiesController(CmsContext context, IConfiguration configuration)
+        public FacultiesController(CmsproContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;

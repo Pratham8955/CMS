@@ -9,6 +9,8 @@ public partial class Semester
 
     public string SemName { get; set; } = null!;
 
+    public virtual ICollection<FacultySubject> FacultySubjects { get; set; } = new List<FacultySubject>();
+
     public virtual ICollection<FeeStructure> FeeStructures { get; set; } = new List<FeeStructure>();
 
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();

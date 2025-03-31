@@ -17,7 +17,7 @@ public partial class Faculty
 
     public string? Qualification { get; set; }
 
-    public string? Experience { get; set; }
+    public int? Experience { get; set; }
 
     public string Password { get; set; } = null!;
 

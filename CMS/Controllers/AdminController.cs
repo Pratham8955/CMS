@@ -11,10 +11,10 @@ namespace CMS.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        private readonly CmsContext _context;
+        private readonly CmsproContext _context;
         private readonly IConfiguration _configuration;
 
-        public AdminController(CmsContext context, IConfiguration configuration)
+        public AdminController(CmsproContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -27,6 +27,7 @@ namespace CMS.Controllers
         {
             var department = await _context.Departments.Select(s => new DepartmentsDTO
             {
+                DeptId = s.DeptId,
                 DeptName = s.DeptName,
                 HeadOfDept = s.HeadOfDept,
             }).ToListAsync();
@@ -163,7 +164,7 @@ namespace CMS.Controllers
                     Experience = dto.Experience,
                     Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                     DeptId = dto.DeptId,
-                    GroupId = dto.GroupId,
+                    GroupId = 2,
 
                 };
                 _context.Faculties.Add(faculty);
@@ -195,13 +196,15 @@ namespace CMS.Controllers
 
 
         [HttpPost("UpdateFaculty/{id}")]
-        public async Task<IActionResult> UpdateFaculty(int id, [FromBody] FacultyDTO updatefaculty)
+        public async Task<IActionResult> UpdateFaculty(int id, [FromBody] UpdateFacultyDTO updatefaculty)
         {
             var faculty = await _context.Faculties.FindAsync(id);
             if (faculty == null)
             {
                 return NotFound($"Faculty with Id {id} Not Found");
             }
+
+
             faculty.FacultyName = updatefaculty.FacultyName;
             faculty.Email = updatefaculty.Email;
             faculty.Doj = updatefaculty.Doj;
@@ -361,6 +364,7 @@ namespace CMS.Controllers
             {
                 FacultyId = s.FacultyId,
                 SubjectId = s.SubjectId,
+                SemId = s.SemId,
             }).ToListAsync();
             return Ok(new
             {
@@ -379,7 +383,7 @@ namespace CMS.Controllers
             {
                 // Check if faculty is already assigned to the subject
                 var existingAssignment = await _context.FacultySubjects
-                    .FirstOrDefaultAsync(fs => fs.FacultyId == dto.FacultyId && fs.SubjectId == dto.SubjectId);
+                    .FirstOrDefaultAsync(fs => fs.FacultyId == dto.FacultyId && fs.SubjectId == dto.SubjectId && fs.SemId == dto.SemId);
 
                 if (existingAssignment != null)
                 {
@@ -389,7 +393,8 @@ namespace CMS.Controllers
                 var facsubject = new FacultySubject
                 {
                     FacultyId = dto.FacultyId,
-                    SubjectId = dto.SubjectId
+                    SubjectId = dto.SubjectId,
+                    SemId=dto.SemId
                 };
 
                 _context.FacultySubjects.Add(facsubject);
@@ -424,7 +429,8 @@ namespace CMS.Controllers
             }
             facsubject.FacultyId = updateFacultySubject.FacultyId;
             facsubject.SubjectId = updateFacultySubject.SubjectId;
-          
+            facsubject.SemId= updateFacultySubject.SemId;
+
             try
             {
                 await _context.SaveChangesAsync();

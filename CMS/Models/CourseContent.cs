@@ -7,7 +7,7 @@ public partial class CourseContent
 {
     public int ContentId { get; set; }
 
-    public int SubjectId { get; set; }
+    public int? SubjectId { get; set; }
 
     public string Title { get; set; } = null!;
 
@@ -17,5 +17,5 @@ public partial class CourseContent
 
     public DateTime? UploadDate { get; set; }
 
-    public virtual Subject Subject { get; set; } = null!;
+    public virtual Subject? Subject { get; set; }
 }

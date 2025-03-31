@@ -21,10 +21,10 @@ namespace CMS.Controllers
     [ApiController]
     public class RegisterController : ControllerBase
     {
-        private readonly CmsContext _context;
+        private readonly CmsproContext _context;
         private readonly IConfiguration _configuration;
 
-        public RegisterController(CmsContext context, IConfiguration configuration)
+        public RegisterController(CmsproContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -146,7 +146,7 @@ namespace CMS.Controllers
                     Phone = dto.Phone,
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
-                    GroupId = dto.GroupId,
+                    GroupId = 3,
                 };
                 _context.Students.Add(student);
                 await _context.SaveChangesAsync();
@@ -373,8 +373,8 @@ namespace CMS.Controllers
             return roleId switch
             {
                 1 => "/admin/dashboard",
-                2 => "/student/dashboard",
-                3 => "/faculty/dashboard",
+                2 => "/faculty/dashboard",
+                3 => "/student/dashboard",
                 _ => "/"
             };
         }

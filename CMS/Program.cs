@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<CmsContext>(op => op.UseSqlServer(builder.Configuration.GetConnectionString("DbCon")));
+builder.Services.AddDbContext<CmsproContext>(op => op.UseSqlServer(builder.Configuration.GetConnectionString("DbCon")));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

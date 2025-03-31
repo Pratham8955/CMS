@@ -2,13 +2,12 @@
 
 namespace CMS.DTOs
 {
-    public class FacultyDTO
+    public class UpdateFacultyDTO
     {
-
         [Required]
         public string FacultyName { get; set; } = null!;
 
-        [Required,EmailAddress]
+        [Required, EmailAddress]
         public string Email { get; set; } = null!;
 
         [Required]
@@ -17,20 +16,14 @@ namespace CMS.DTOs
         [Required]
         public string Gender { get; set; } = null!;
 
-        [Required]
-        public string? Qualification { get; set; }
+        public string? Qualification { get; set; } // ❌ Not required
 
-        [Required]
-        public int? Experience { get; set; }
-
-        [Required, MinLength(6)]
-        public string Password { get; set; } = null!;
+        public int? Experience { get; set; } // ❌ Not required
 
         [Required]
         public int DeptId { get; set; }
 
         [Required]
         public int GroupId { get; set; }
-
     }
 }

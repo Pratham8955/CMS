@@ -4,20 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Models;
 
-public partial class CmsContext : DbContext
+public partial class CmsproContext : DbContext
 {
     private IConfiguration _configuration;
-    public CmsContext(IConfiguration configuration)
+    public CmsproContext(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public CmsContext(DbContextOptions<CmsContext> options, IConfiguration configuration)
+    public CmsproContext(DbContextOptions<CmsproContext> options, IConfiguration configuration)
         : base(options)
     {
         _configuration = configuration;
     }
-
 
     public virtual DbSet<CourseContent> CourseContents { get; set; }
 
@@ -51,7 +50,7 @@ public partial class CmsContext : DbContext
     {
         modelBuilder.Entity<CourseContent>(entity =>
         {
-            entity.HasKey(e => e.ContentId).HasName("PK__course_c__0BDC87195165187F");
+            entity.HasKey(e => e.ContentId).HasName("PK__course_c__0BDC8719619B8048");
 
             entity.ToTable("course_content");
 
@@ -70,13 +69,13 @@ public partial class CmsContext : DbContext
 
             entity.HasOne(d => d.Subject).WithMany(p => p.CourseContents)
                 .HasForeignKey(d => d.SubjectId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__course_co__subje__5441852A");
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK__course_co__subje__6477ECF3");
         });
 
         modelBuilder.Entity<Department>(entity =>
         {
-            entity.HasKey(e => e.DeptId).HasName("PK__departme__BE2D26B603317E3D");
+            entity.HasKey(e => e.DeptId).HasName("PK__departme__BE2D26B6164452B1");
 
             entity.ToTable("departments");
 
@@ -89,16 +88,16 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.HeadOfDeptNavigation).WithMany(p => p.Departments)
                 .HasForeignKey(d => d.HeadOfDept)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK__departmen__headO__1920BF5C");
+                .HasConstraintName("FK__departmen__headO__22AA2996");
         });
 
         modelBuilder.Entity<Faculty>(entity =>
         {
-            entity.HasKey(e => e.FacultyId).HasName("PK__faculty__DBBF6FB1108B795B");
+            entity.HasKey(e => e.FacultyId).HasName("PK__faculty__DBBF6FB11A14E395");
 
             entity.ToTable("faculty");
 
-            entity.HasIndex(e => e.Email, "UQ__faculty__AB6E61641367E606").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__faculty__AB6E61641CF15040").IsUnique();
 
             entity.Property(e => e.FacultyId).HasColumnName("facultyId");
             entity.Property(e => e.DeptId).HasColumnName("deptId");
@@ -107,7 +106,6 @@ public partial class CmsContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("email");
             entity.Property(e => e.Experience)
-                .HasMaxLength(50)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnName("experience");
             entity.Property(e => e.FacultyName)
@@ -128,38 +126,44 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Dept).WithMany(p => p.Faculties)
                 .HasForeignKey(d => d.DeptId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__faculty__deptId__173876EA");
+                .HasConstraintName("FK__faculty__deptId__20C1E124");
 
             entity.HasOne(d => d.Group).WithMany(p => p.Faculties)
                 .HasForeignKey(d => d.GroupId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__faculty__groupId__182C9B23");
+                .HasConstraintName("FK__faculty__groupId__21B6055D");
         });
 
         modelBuilder.Entity<FacultySubject>(entity =>
         {
-            entity.HasKey(e => e.FacultySubjectId).HasName("PK__faculty___8A87BF3A25869641");
+            entity.HasKey(e => e.FacultySubjectId).HasName("PK__faculty___8A87BF3A2F10007B");
 
             entity.ToTable("faculty_subject");
 
             entity.Property(e => e.FacultySubjectId).HasColumnName("facultySubjectId");
             entity.Property(e => e.FacultyId).HasColumnName("facultyId");
+            entity.Property(e => e.SemId).HasColumnName("semId");
             entity.Property(e => e.SubjectId).HasColumnName("subjectId");
 
             entity.HasOne(d => d.Faculty).WithMany(p => p.FacultySubjects)
                 .HasForeignKey(d => d.FacultyId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK__faculty_s__facul__30F848ED");
+
+            entity.HasOne(d => d.Sem).WithMany(p => p.FacultySubjects)
+                .HasForeignKey(d => d.SemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__faculty_s__facul__276EDEB3");
+                .HasConstraintName("FK__faculty_s__semId__32E0915F");
 
             entity.HasOne(d => d.Subject).WithMany(p => p.FacultySubjects)
                 .HasForeignKey(d => d.SubjectId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__faculty_s__subje__286302EC");
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK__faculty_s__subje__31EC6D26");
         });
 
         modelBuilder.Entity<FeeStructure>(entity =>
         {
-            entity.HasKey(e => e.FeeStructureId).HasName("PK__fee_stru__F2874CB73C69FB99");
+            entity.HasKey(e => e.FeeStructureId).HasName("PK__fee_stru__F2874CB73F466844");
 
             entity.ToTable("fee_structure");
 
@@ -173,17 +177,17 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Dept).WithMany(p => p.FeeStructures)
                 .HasForeignKey(d => d.DeptId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__fee_struc__deptI__3E52440B");
+                .HasConstraintName("FK__fee_struc__deptI__412EB0B6");
 
             entity.HasOne(d => d.Sem).WithMany(p => p.FeeStructures)
                 .HasForeignKey(d => d.SemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__fee_struc__semId__3F466844");
+                .HasConstraintName("FK__fee_struc__semId__4222D4EF");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__feedback__2613FD24571DF1D5");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__feedback__2613FD246754599E");
 
             entity.ToTable("feedbacks");
 
@@ -202,7 +206,7 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<GroupMaster>(entity =>
         {
-            entity.HasKey(e => e.GroupId).HasName("PK__group_ma__88C1034D7F60ED59");
+            entity.HasKey(e => e.GroupId).HasName("PK__group_ma__88C1034D117F9D94");
 
             entity.ToTable("group_master");
 
@@ -214,7 +218,7 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<Semester>(entity =>
         {
-            entity.HasKey(e => e.SemId).HasName("PK__semester__DF1884121BFD2C07");
+            entity.HasKey(e => e.SemId).HasName("PK__semester__DF18841225869641");
 
             entity.ToTable("semesters");
 
@@ -226,11 +230,11 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<Student>(entity =>
         {
-            entity.HasKey(e => e.StudentId).HasName("PK__students__4D11D63C32E0915F");
+            entity.HasKey(e => e.StudentId).HasName("PK__students__4D11D63C35BCFE0A");
 
             entity.ToTable("students");
 
-            entity.HasIndex(e => e.Email, "UQ__students__AB6E616435BCFE0A").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__students__AB6E616438996AB5").IsUnique();
 
             entity.Property(e => e.StudentId).HasColumnName("studentId");
             entity.Property(e => e.Address)
@@ -265,22 +269,22 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.CurrentSemesterNavigation).WithMany(p => p.Students)
                 .HasForeignKey(d => d.CurrentSemester)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__students__curren__398D8EEE");
+                .HasConstraintName("FK__students__curren__3C69FB99");
 
             entity.HasOne(d => d.Dept).WithMany(p => p.Students)
                 .HasForeignKey(d => d.DeptId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__students__deptId__37A5467C");
+                .HasConstraintName("FK__students__deptId__3A81B327");
 
             entity.HasOne(d => d.Group).WithMany(p => p.Students)
                 .HasForeignKey(d => d.GroupId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__students__groupI__38996AB5");
+                .HasConstraintName("FK__students__groupI__3B75D760");
         });
 
         modelBuilder.Entity<StudentFee>(entity =>
         {
-            entity.HasKey(e => e.FeeId).HasName("PK__student___E09FF2034222D4EF");
+            entity.HasKey(e => e.FeeId).HasName("PK__student___E09FF20344FF419A");
 
             entity.ToTable("student_fees");
 
@@ -308,17 +312,16 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.FeeStructure).WithMany(p => p.StudentFees)
                 .HasForeignKey(d => d.FeeStructureId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_f__feeSt__47DBAE45");
+                .HasConstraintName("FK__student_f__feeSt__4AB81AF0");
 
             entity.HasOne(d => d.Student).WithMany(p => p.StudentFees)
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_f__stude__46E78A0C");
+                .HasConstraintName("FK__student_f__stude__49C3F6B7");
         });
 
         modelBuilder.Entity<StudentFeesType>(entity =>
         {
-            entity.HasKey(e => e.FeetypeId).HasName("PK__student___3656AA5E4AB81AF0");
+            entity.HasKey(e => e.FeetypeId).HasName("PK__student___3656AA5E5AEE82B9");
 
             entity.ToTable("student_fees_type");
 
@@ -345,17 +348,16 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Fee).WithMany(p => p.StudentFeesTypes)
                 .HasForeignKey(d => d.FeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_f__feeId__4E88ABD4");
+                .HasConstraintName("FK__student_f__feeId__5EBF139D");
 
             entity.HasOne(d => d.Student).WithMany(p => p.StudentFeesTypes)
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_f__stude__4D94879B");
+                .HasConstraintName("FK__student_f__stude__5DCAEF64");
         });
 
         modelBuilder.Entity<Subject>(entity =>
         {
-            entity.HasKey(e => e.SubjectId).HasName("PK__subjects__ACF9A7601FCDBCEB");
+            entity.HasKey(e => e.SubjectId).HasName("PK__subjects__ACF9A76029572725");
 
             entity.ToTable("subjects");
 
@@ -369,12 +371,12 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Dept).WithMany(p => p.Subjects)
                 .HasForeignKey(d => d.DeptId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__subjects__deptId__21B6055D");
+                .HasConstraintName("FK__subjects__deptId__2B3F6F97");
 
             entity.HasOne(d => d.Sem).WithMany(p => p.Subjects)
                 .HasForeignKey(d => d.SemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__subjects__semId__22AA2996");
+                .HasConstraintName("FK__subjects__semId__2C3393D0");
         });
 
         OnModelCreatingPartial(modelBuilder);
