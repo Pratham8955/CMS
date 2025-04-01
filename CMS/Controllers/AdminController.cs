@@ -394,7 +394,7 @@ namespace CMS.Controllers
                 {
                     FacultyId = dto.FacultyId,
                     SubjectId = dto.SubjectId,
-                    SemId=dto.SemId
+                    SemId = dto.SemId
                 };
 
                 _context.FacultySubjects.Add(facsubject);
@@ -429,7 +429,7 @@ namespace CMS.Controllers
             }
             facsubject.FacultyId = updateFacultySubject.FacultyId;
             facsubject.SubjectId = updateFacultySubject.SubjectId;
-            facsubject.SemId= updateFacultySubject.SemId;
+            facsubject.SemId = updateFacultySubject.SemId;
 
             try
             {
@@ -461,6 +461,29 @@ namespace CMS.Controllers
             {
                 return StatusCode(500, $"Error Deleting Faculty Subjects {ex.Message}");
             }
+        }
+
+
+
+        //Semester
+
+
+        [HttpGet("GetSemester")]
+
+        public async Task<IActionResult> GetSemester()
+        {
+            var semester = await _context.Semesters.Select(s => new SemesterDTO
+            {
+                SemId = s.SemId,
+                SemName = s.SemName,
+
+            }).ToListAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "Semesters fetch successfully.",
+                Semsester = semester,
+            });
         }
     }
 }

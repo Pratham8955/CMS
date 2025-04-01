@@ -133,12 +133,15 @@ namespace CMS.Controllers
                     throw new Exception("Email Already Exists.");
                 }
 
+                // ✅ Convert DOB from string to DateOnly
+                //DateOnly dobValue = DateOnly.ParseExact(dto.Dob, "yyyy-MM-dd");
+
                 var student = new Student
                 {
                     StudentName = dto.StudentName,
                     Email = dto.Email,
                     Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    Dob = dto.Dob,
+                    Dob = dto.Dob, // Now stored as DateOnly
                     Gender = dto.Gender,
                     Address = dto.Address,
                     City = dto.City,
@@ -146,8 +149,9 @@ namespace CMS.Controllers
                     Phone = dto.Phone,
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
-                    GroupId = 3,
+                    GroupId = dto.GroupId,
                 };
+
                 _context.Students.Add(student);
                 await _context.SaveChangesAsync();
 
@@ -160,7 +164,7 @@ namespace CMS.Controllers
                         student.StudentId,
                         student.GroupId,
                         student.StudentName,
-                        student.Dob,
+                        student.Dob, // Will return as DateOnly
                         student.Gender,
                         student.Email,
                         student.Address,
@@ -170,11 +174,21 @@ namespace CMS.Controllers
                     }
                 });
             }
+            catch (FormatException)
+            {
+                return BadRequest(new { success = false, message = "Invalid date format. Please use yyyy-MM-dd." });
+            }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    details = ex.InnerException?.Message // Capture the real issue
+                });
             }
         }
+
 
 
         [HttpPost("send-otp")]
@@ -372,9 +386,9 @@ namespace CMS.Controllers
         {
             return roleId switch
             {
-                1 => "/admin/dashboard",
-                2 => "/faculty/dashboard",
-                3 => "/student/dashboard",
+                1 => "/admin/admindashboard",
+                2 => "/faculty/facultydashboard",
+                3 => "/student/Studentdashboard",
                 _ => "/"
             };
         }

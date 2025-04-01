@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using CMS.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,22 +7,25 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<CmsproContext>(op => op.UseSqlServer(builder.Configuration.GetConnectionString("DbCon")));
+builder.Services.AddDbContext<CmsproContext>(op =>
+    op.UseSqlServer(builder.Configuration.GetConnectionString("DbCon")));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Otp sending and Storing functionality
+// OTP sending and Storing functionality
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(op =>
 {
-    op.IOTimeout = TimeSpan.FromMinutes(5);
+    op.IdleTimeout = TimeSpan.FromMinutes(5);  // ✅ Use IdleTimeout instead of IOTimeout
     op.Cookie.HttpOnly = true;
     op.Cookie.IsEssential = true;
+    op.Cookie.SameSite = SameSiteMode.None;  // ✅ Required for cross-origin cookies
+    op.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // ✅ Required for HTTPS
 });
 
-// Jwt functionality
+// JWT Authentication
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(op =>
@@ -39,12 +42,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// ✅ Fix: Only use ONE CORS policy (AllowFrontend)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin()
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins("http://localhost:3000")  // ✅ Use your frontend URL
               .AllowAnyMethod()
-              .AllowAnyHeader());
+              .AllowAnyHeader()
+              .AllowCredentials());  // ✅ Required for JWT authentication & cookies
 });
 
 var app = builder.Build();
@@ -58,12 +63,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll"); // CORS should be before Authorization
+// ✅ Fix: Apply only "AllowFrontend" policy and move it before Authentication & Authorization
+app.UseCors("AllowFrontend");
 
+app.UseSession();  // ✅ Place before Authentication to ensure cookies work
+
+app.UseAuthentication(); // ✅ Added to ensure JWT Authentication is enabled
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseSession();
 
 app.Run();
