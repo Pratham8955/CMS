@@ -165,7 +165,7 @@ namespace CMS.Controllers
                         student.StudentId,
                         student.GroupId,
                         student.StudentName,
-                        student.Dob, // Will return as DateOnly
+                        student.Dob,
                         student.Gender,
                         student.Email,
                         student.Address,
