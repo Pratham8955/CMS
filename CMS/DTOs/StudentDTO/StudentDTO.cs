@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CMS.DTOs
+namespace CMS.DTOs.StudentDTO
 {
     public class StudentDTO
     {
@@ -29,7 +29,7 @@ namespace CMS.DTOs
         [Required]
         public string State { get; set; } = null!;
 
-        [Required,Phone]
+        [Required, Phone]
         public string Phone { get; set; } = null!;
 
         [Required]

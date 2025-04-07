@@ -1,4 +1,4 @@
-﻿namespace CMS.DTOs
+﻿namespace CMS.DTOs.SemesterDTO
 {
     public class SemesterDTO
     {

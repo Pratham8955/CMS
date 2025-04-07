@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CMS.DTOs
+namespace CMS.DTOs.GroupMasterDTO
 {
     public class LoginUserDTO
     {

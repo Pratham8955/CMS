@@ -1,4 +1,4 @@
-﻿namespace CMS.DTOs
+﻿namespace CMS.DTOs.GroupMasterDTO
 {
     public class VerifyOtpDto
     {

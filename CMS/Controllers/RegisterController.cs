@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CMS.Models;
-using CMS.DTOs;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Net.Mail;
 using System.Net;
@@ -14,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using CMS.DTOs.GroupMasterDTO;
+using CMS.DTOs.StudentDTO;
 
 namespace CMS.Controllers
 {

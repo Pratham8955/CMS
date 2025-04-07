@@ -1,14 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CMS.DTOs
+namespace CMS.DTOs.FacultyDTO
 {
     public class FacultyDTO
     {
+        public int FacultyId { get; set; }
 
         [Required]
         public string FacultyName { get; set; } = null!;
 
-        [Required,EmailAddress]
+        [Required, EmailAddress]
         public string Email { get; set; } = null!;
 
         [Required]
