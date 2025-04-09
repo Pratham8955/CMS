@@ -1,5 +1,6 @@
 ﻿using CMS.DTOs.SubjectDTO;
 using CMS.Models;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace CMS.Controllers.AdminController
         {
             var subject = await _context.Subjects.Select(s => new SubjectDTO
             {
-                SubjectId=s.SubjectId,
+                SubjectId = s.SubjectId,
                 SubjectName = s.SubjectName,
                 DeptId = s.DeptId,
                 SemId = s.SemId
@@ -43,46 +44,52 @@ namespace CMS.Controllers.AdminController
         [HttpPost("AddSubjects")]
         public async Task<IActionResult> AddSubjects([FromBody] SubjectDTO dto)
         {
-            try
+            if (_context.Subjects.Any(u => u.SubjectName == dto.SubjectName && u.DeptId == dto.DeptId && u.SemId == dto.SemId))
             {
-                if (_context.Subjects.Any(u => u.SubjectName == dto.SubjectName))
+                return BadRequest(new
                 {
-                    throw new Exception("Subjects Already Exists.");
-                }
-
-                var subject = new Subject
-                {
-
-                    SubjectName = dto.SubjectName,
-                    DeptId = dto.DeptId,
-                    SemId = dto.SemId,
-                };
-                _context.Subjects.Add(subject);
-                await _context.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Successfully inserted",
-                    Subject = new
-                    {
-                        subject.SubjectName,
-                        subject.DeptId,
-                        subject.SemId
-                    }
+                    success = false,
+                    message = "Subject already exists for this department and semester."
                 });
             }
-            catch (Exception ex)
+
+            var subject = new Subject
             {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
+                SubjectName = dto.SubjectName,
+                DeptId = dto.DeptId,
+                SemId = dto.SemId
+            };
+
+            _context.Subjects.Add(subject);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Subject inserted successfully.",
+                Subject = new
+                {
+                    subject.SubjectName,
+                    subject.DeptId,
+                    subject.SemId
+                }
+            });
         }
+
 
 
         [HttpPost("UpdateSubject/{id}")]
         public async Task<IActionResult> UpdateSubject(int id, [FromBody] SubjectDTO updateSubject)
         {
             var subject = await _context.Subjects.FindAsync(id);
+            if (_context.Subjects.Any(u => u.SubjectName == updateSubject.SubjectName && u.DeptId == updateSubject.DeptId && u.SemId == updateSubject.SemId))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Subject already exists for this department and semester."
+                });
+            }
             if (subject == null)
             {
                 return NotFound($"Subject with Id {id} Not Found");

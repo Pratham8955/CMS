@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Account Details</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eef5ff;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #004080, #008060);
+            padding: 15px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .info-box {
+            background: #004080;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">🎓 College Management System - Faculty Account Created 📚</div>
+        <p>Hello <strong>{{FacultyName}}</strong>,</p>
+        <p>Your faculty account has been successfully created. Below are your login credentials:</p>
+
+        <div class="info-box">📧 Email: {{Email}}</div>
+        <div class="info-box">🔑 Password: {{Password}}</div>
+
+        <p>Please log in using the above credentials. It is recommended to change your password after logging in.</p>
+        <p class="footer">If you have any issues, contact the admin team.</p>
+        <p class="footer">© 2025 College Management System. All Rights Reserved.</p>
+    </div>
+</body>
+</html>

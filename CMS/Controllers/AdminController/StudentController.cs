@@ -4,6 +4,7 @@ using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 
 namespace CMS.Controllers.AdminController
 {
@@ -45,6 +46,54 @@ namespace CMS.Controllers.AdminController
                 message = "Students Fetch Succesfully",
                 student = students
             });
+        }
+
+
+        [HttpPut("updateStudents/{id}")]
+        public async Task<IActionResult> updateStudents(int id, [FromBody] UpdateStudentDTO updatestudent)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null)
+            {
+                return NotFound($"No student of this {id} is found");
+            }
+            student.StudentName = updatestudent.StudentName;
+            student.Email = updatestudent.Email;
+            student.Dob = updatestudent.Dob;
+            student.Gender = updatestudent.Gender;
+            student.Address = updatestudent.Address;
+            student.City = updatestudent.City;
+            student.State = updatestudent.State;
+            student.Phone = updatestudent.Phone;
+            student.DeptId = updatestudent.DeptId;
+            student.CurrentSemester = updatestudent.CurrentSemester;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating Faculty: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("deleteStudent/{id}")]
+        public async Task<IActionResult> deleteStudent(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            try
+            {
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error Deleting Faculty: {ex.Message}");
+            }
+
         }
 
     }

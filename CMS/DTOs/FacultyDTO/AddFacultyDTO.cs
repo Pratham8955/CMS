@@ -2,7 +2,7 @@
 
 namespace CMS.DTOs.FacultyDTO
 {
-    public class FacultyDTO
+    public class AddFacultyDTO
     {
         public int FacultyId { get; set; }
 
@@ -24,13 +24,10 @@ namespace CMS.DTOs.FacultyDTO
         [Required]
         public int? Experience { get; set; }
 
-        // Optional — remove Required and MinLength
-        public string? Password { get; set; }
-
         [Required]
         public int DeptId { get; set; }
 
-        // Optional — hardcoded as 2 in backend
+        [Required]
         public int GroupId { get; set; }
     }
 }

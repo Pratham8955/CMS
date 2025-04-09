@@ -1,5 +1,6 @@
 ﻿using CMS.DTOs.DepartmentDTO;
 using CMS.Models;
+using Humanizer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,15 @@ namespace CMS.Controllers.AdminController
         {
             try
             {
+                if (_context.Departments.Any(fs => fs.DeptName == addDepartment.DeptName ))
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "This department already exists."
+                    });
+                }
+
                 var department = new Department
                 {
                     DeptName = addDepartment.DeptName
@@ -72,6 +82,14 @@ namespace CMS.Controllers.AdminController
         [HttpPost("UpdateDepartment/{id}")]
         public async Task<IActionResult> UpdateDepartment(int id, [FromBody] DepartmentsDTO updateDepartment)
         {
+            if (_context.Departments.Any(fs => fs.DeptName == updateDepartment.DeptName))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "This department already exists."
+                });
+            }
             var department = await _context.Departments.FindAsync(id);
             if (department == null)
             {

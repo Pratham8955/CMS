@@ -9,6 +9,8 @@ using CMS.Models;
 using CMS.DTOs;
 using System.Text.RegularExpressions;
 using CMS.DTOs.FacultyDTO;
+using System.Net.Mail;
+using System.Net;
 
 namespace CMS.Controllers.AdminController
 {
@@ -56,56 +58,132 @@ namespace CMS.Controllers.AdminController
 
 
 
+        private string GenerateSecurePassword(int length = 10)
+        {
+            const string lower = "abcdefghijklmnopqrstuvwxyz";
+            const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string digits = "0123456789";
+            const string special = "!@#$%^&*";
+
+            var random = new Random();
+            var chars = new List<char>
+    {
+        upper[random.Next(upper.Length)],
+        special[random.Next(special.Length)],
+        digits[random.Next(digits.Length)],
+        lower[random.Next(lower.Length)],
+    };
+
+            string allChars = lower + upper + digits + special;
+            for (int i = chars.Count; i < length; i++)
+            {
+                chars.Add(allChars[random.Next(allChars.Length)]);
+            }
+
+            return new string(chars.OrderBy(x => random.Next()).ToArray());
+        }
+
+
+        private async Task<bool> SendFacultyEmail(string toEmail, string facultyName, string plainPassword)
+        {
+            try
+            {
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "EmailTemplate.html");
+                string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
+
+                emailBody = emailBody
+                    .Replace("{{FacultyName}}", facultyName)
+                    .Replace("{{Email}}", toEmail)
+                    .Replace("{{Password}}", plainPassword);
+
+                using var smtp = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential("salipratham033@gmail.com", "zlbd txsz xmso uswe"),
+                    EnableSsl = true,
+                };
+
+                var mailMsg = new MailMessage
+                {
+                    From = new MailAddress("salipratham033@gmail.com"),
+                    Subject = "Your Faculty Login Credentials",
+                    Body = emailBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMsg.To.Add(toEmail);
+                await smtp.SendMailAsync(mailMsg);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+
         [HttpPost("AddFaculty")]
         public async Task<IActionResult> AddFaculty([FromBody] FacultyDTO dto)
         {
             try
             {
-                if (_context.Students.Any(u => u.Email == dto.Email))
+                if (_context.Students.Any(u => u.Email == dto.Email) ||
+                    _context.Faculties.Any(f => f.Email == dto.Email))
                 {
-                    throw new Exception("Email Already Exists.");
+                    throw new Exception("Email already exists.");
                 }
+
+                // Auto-generate and hash password
+                string generatedPassword = GenerateSecurePassword();
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(generatedPassword);
 
                 var faculty = new Faculty
                 {
-
                     FacultyName = dto.FacultyName,
                     Email = dto.Email,
                     Doj = dto.Doj,
                     Gender = dto.Gender,
                     Qualification = dto.Qualification,
                     Experience = dto.Experience,
-                    Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    Password = hashedPassword,
                     DeptId = dto.DeptId,
-                    GroupId = 2,
-
+                    GroupId = 2 // Fixed for faculty
                 };
+
                 _context.Faculties.Add(faculty);
                 await _context.SaveChangesAsync();
+
+                // Send credentials via email
+                await SendFacultyEmail(dto.Email, dto.FacultyName, generatedPassword);
 
                 return Ok(new
                 {
                     success = true,
-                    message = "Successfully inserted",
+                    message = "Faculty added successfully. Credentials sent to email.",
                     faculty = new
                     {
                         faculty.FacultyId,
-                        faculty.GroupId,
-                        faculty.DeptId,
                         faculty.FacultyName,
                         faculty.Email,
                         faculty.Doj,
                         faculty.Gender,
                         faculty.Qualification,
                         faculty.Experience,
+                        faculty.DeptId
                     }
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.InnerException?.Message ?? ex.Message
+                });
             }
         }
+
 
 
         [HttpPost("UpdateFaculty/{id}")]
