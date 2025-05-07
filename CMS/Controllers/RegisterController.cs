@@ -125,7 +125,7 @@ namespace CMS.Controllers
 
 
         [HttpPost("register-student")]
-        public async Task<IActionResult> RegisterStudent([FromBody] StudentDTO dto)
+        public async Task<IActionResult> RegisterStudent([FromForm] StudentDTO dto)
         {
             try
             {
@@ -133,16 +133,52 @@ namespace CMS.Controllers
                 {
                     throw new Exception("Email Already Exists.");
                 }
+                // ✅ Step 1: Check if image is uploaded
+                //if (studentImage == null || studentImage.Length == 0)
+                //{
+                //    return BadRequest(new { success = false, message = "Please upload a student image." });
+                //}
 
-                // ✅ Convert DOB from string to DateOnly
-                //DateOnly dobValue = DateOnly.ParseExact(dto.Dob, "yyyy-MM-dd");
+                //// ✅ Step 2: Validate allowed file formats
+                //var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                //var extension = Path.GetExtension(studentImage.FileName).ToLower();
+
+                //if (!allowedExtensions.Contains(extension))
+                //{
+                //    return BadRequest(new { success = false, message = "Invalid image format. Only .jpg, .jpeg, .png allowed." });
+                //}
+
+                //// ✅ Step 3: Limit file size to 2MB
+                //const int maxFileSize = 2 * 1024 * 1024;
+                //if (studentImage.Length > maxFileSize)
+                //{
+                //    return BadRequest(new { success = false, message = "Image size must be less than 2MB." });
+                //}
+
+                //// ✅ Step 4: Generate a unique filename using timestamp
+                //string uniqueFileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
+
+                //// ✅ Step 5: Set path to save image
+                //string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/student-images");
+                //if (!Directory.Exists(uploadsFolder))
+                //{
+                //    Directory.CreateDirectory(uploadsFolder);
+                //}
+
+                //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                //// ✅ Step 6: Save the file to the server
+                //using (var stream = new FileStream(filePath, FileMode.Create))
+                //{
+                //    await studentImage.CopyToAsync(stream);
+                //}
 
                 var student = new Student
                 {
                     StudentName = dto.StudentName,
                     Email = dto.Email,
                     Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                    Dob = dto.Dob, // Now stored as DateOnly
+                    Dob = dto.Dob,
                     Gender = dto.Gender,
                     Address = dto.Address,
                     City = dto.City,
@@ -151,6 +187,7 @@ namespace CMS.Controllers
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
                     GroupId = dto.GroupId,
+                    //StudentImg = uniqueFileName,
                 };
 
                 _context.Students.Add(student);

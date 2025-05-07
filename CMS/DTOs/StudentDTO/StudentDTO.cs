@@ -40,5 +40,8 @@ namespace CMS.DTOs.StudentDTO
 
         [Required]
         public int GroupId { get; set; }
+
+        [Required]
+        public IFormFile StudentImg { get; set; } = null!;
     }
 }

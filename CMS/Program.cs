@@ -64,13 +64,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 // ✅ Fix: Apply only "AllowFrontend" policy and move it before Authentication & Authorization
 app.UseCors("AllowFrontend");
 
 app.UseSession();  // ✅ Place before Authentication to ensure cookies work
 
 app.UseAuthentication(); // ✅ Added to ensure JWT Authentication is enabled
-app.UseAuthorization();
+app.UseAuthorization(); // Add this line
+
 
 app.MapControllers();
 

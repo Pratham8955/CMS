@@ -108,6 +108,9 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.Experience)
                 .HasDefaultValueSql("(NULL)")
                 .HasColumnName("experience");
+            entity.Property(e => e.FacultyImg)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.FacultyName)
                 .HasMaxLength(100)
                 .HasColumnName("facultyName");
@@ -172,6 +175,9 @@ public partial class CmsproContext : DbContext
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("defaultAmount");
             entity.Property(e => e.DeptId).HasColumnName("deptId");
+            entity.Property(e => e.FeeStructureDescription)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.SemId).HasColumnName("semId");
 
             entity.HasOne(d => d.Dept).WithMany(p => p.FeeStructures)
@@ -262,6 +268,9 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.State)
                 .HasMaxLength(20)
                 .HasColumnName("state");
+            entity.Property(e => e.StudentImg)
+                .HasMaxLength(50)
+                .IsUnicode(false);
             entity.Property(e => e.StudentName)
                 .HasMaxLength(100)
                 .HasColumnName("studentName");
@@ -289,7 +298,6 @@ public partial class CmsproContext : DbContext
             entity.ToTable("student_fees");
 
             entity.Property(e => e.FeeId).HasColumnName("feeId");
-            entity.Property(e => e.DueDate).HasColumnName("dueDate");
             entity.Property(e => e.FeeStructureId).HasColumnName("feeStructureId");
             entity.Property(e => e.PaidAmount)
                 .HasColumnType("decimal(10, 2)")
@@ -337,22 +345,23 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.LabFees)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("labFees");
-            entity.Property(e => e.StudentId).HasColumnName("studentId");
-            entity.Property(e => e.TransactionDate)
-                .HasDefaultValueSql("(sysdatetime())")
-                .HasColumnName("transactionDate");
+            entity.Property(e => e.TransactionDate).HasColumnName("transactionDate");
             entity.Property(e => e.TuitionFees)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("tuitionFees");
 
             entity.HasOne(d => d.Fee).WithMany(p => p.StudentFeesTypes)
                 .HasForeignKey(d => d.FeeId)
+                .HasConstraintName("FK_student_fees_type_student_fees_type");
+
+            entity.HasOne(d => d.FeeStructure).WithMany(p => p.StudentFeesTypes)
+                .HasForeignKey(d => d.FeeStructureId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_f__feeId__5EBF139D");
+                .HasConstraintName("FK_student_fees_type_fee_structure");
 
             entity.HasOne(d => d.Student).WithMany(p => p.StudentFeesTypes)
                 .HasForeignKey(d => d.StudentId)
-                .HasConstraintName("FK__student_f__stude__5DCAEF64");
+                .HasConstraintName("FK_student_fees_type_students");
         });
 
         modelBuilder.Entity<Subject>(entity =>

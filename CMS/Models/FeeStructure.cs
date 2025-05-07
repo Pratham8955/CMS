@@ -13,9 +13,13 @@ public partial class FeeStructure
 
     public decimal DefaultAmount { get; set; }
 
+    public string? FeeStructureDescription { get; set; }
+
     public virtual Department Dept { get; set; } = null!;
 
     public virtual Semester Sem { get; set; } = null!;
 
     public virtual ICollection<StudentFee> StudentFees { get; set; } = new List<StudentFee>();
+
+    public virtual ICollection<StudentFeesType> StudentFeesTypes { get; set; } = new List<StudentFeesType>();
 }

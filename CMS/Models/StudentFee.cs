@@ -15,8 +15,6 @@ public partial class StudentFee
 
     public decimal TotalAmount { get; set; }
 
-    public DateOnly DueDate { get; set; }
-
     public string? Status { get; set; }
 
     public string? TransactionId { get; set; }

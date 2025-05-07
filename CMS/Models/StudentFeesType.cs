@@ -7,11 +7,9 @@ public partial class StudentFeesType
 {
     public int FeetypeId { get; set; }
 
-    public int StudentId { get; set; }
-
     public int FeeStructureId { get; set; }
 
-    public int FeeId { get; set; }
+    public int? FeeId { get; set; }
 
     public decimal TuitionFees { get; set; }
 
@@ -23,7 +21,11 @@ public partial class StudentFeesType
 
     public DateTime? TransactionDate { get; set; }
 
-    public virtual StudentFee Fee { get; set; } = null!;
+    public int? StudentId { get; set; }
 
-    public virtual Student Student { get; set; } = null!;
+    public virtual StudentFee? Fee { get; set; }
+
+    public virtual FeeStructure FeeStructure { get; set; } = null!;
+
+    public virtual Student? Student { get; set; }
 }

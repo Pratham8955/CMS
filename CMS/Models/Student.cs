@@ -31,6 +31,8 @@ public partial class Student
 
     public int GroupId { get; set; }
 
+    public string? StudentImg { get; set; }
+
     public virtual Semester CurrentSemesterNavigation { get; set; } = null!;
 
     public virtual Department Dept { get; set; } = null!;

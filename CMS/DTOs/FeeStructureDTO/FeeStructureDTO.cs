@@ -14,5 +14,7 @@ namespace CMS.DTOs.FeeStructureDTO
         [Range(0.01, double.MaxValue, ErrorMessage = "Default amount must be greater than 0.")]
         [DataType(DataType.Currency)]
         public decimal DefaultAmount { get; set; }
+
+        public string? FeeStructureDescription { get; set; }
     }
 }

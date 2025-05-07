@@ -25,6 +25,8 @@ public partial class Faculty
 
     public int GroupId { get; set; }
 
+    public string? FacultyImg { get; set; }
+
     public virtual ICollection<Department> Departments { get; set; } = new List<Department>();
 
     public virtual Department Dept { get; set; } = null!;

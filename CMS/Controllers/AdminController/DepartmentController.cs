@@ -82,7 +82,8 @@ namespace CMS.Controllers.AdminController
         [HttpPost("UpdateDepartment/{id}")]
         public async Task<IActionResult> UpdateDepartment(int id, [FromBody] DepartmentsDTO updateDepartment)
         {
-            if (_context.Departments.Any(fs => fs.DeptName == updateDepartment.DeptName))
+            if (_context.Departments.Any(fs => fs.DeptName == updateDepartment.DeptName && fs.DeptId != id))
+
             {
                 return BadRequest(new
                 {
