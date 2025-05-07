@@ -32,5 +32,8 @@ namespace CMS.DTOs.FacultyDTO
 
         // Optional — hardcoded as 2 in backend
         public int GroupId { get; set; }
+
+        [Required]
+        public IFormFile FacultyImg { get; set; }=null!;
     }
 }

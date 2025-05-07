@@ -130,48 +130,24 @@ namespace CMS.Controllers
             try
             {
                 if (_context.Students.Any(u => u.Email == dto.Email))
-                {
                     throw new Exception("Email Already Exists.");
+
+                string? imageName = null;
+
+                // Save image if provided
+                if (dto.StudentImg != null)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students");
+                    Directory.CreateDirectory(uploadsFolder); // ensure folder exists
+
+                    imageName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StudentImg.FileName);
+                    string filePath = Path.Combine(uploadsFolder, imageName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await dto.StudentImg.CopyToAsync(fileStream);
+                    }
                 }
-                // ✅ Step 1: Check if image is uploaded
-                //if (studentImage == null || studentImage.Length == 0)
-                //{
-                //    return BadRequest(new { success = false, message = "Please upload a student image." });
-                //}
-
-                //// ✅ Step 2: Validate allowed file formats
-                //var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-                //var extension = Path.GetExtension(studentImage.FileName).ToLower();
-
-                //if (!allowedExtensions.Contains(extension))
-                //{
-                //    return BadRequest(new { success = false, message = "Invalid image format. Only .jpg, .jpeg, .png allowed." });
-                //}
-
-                //// ✅ Step 3: Limit file size to 2MB
-                //const int maxFileSize = 2 * 1024 * 1024;
-                //if (studentImage.Length > maxFileSize)
-                //{
-                //    return BadRequest(new { success = false, message = "Image size must be less than 2MB." });
-                //}
-
-                //// ✅ Step 4: Generate a unique filename using timestamp
-                //string uniqueFileName = $"{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
-
-                //// ✅ Step 5: Set path to save image
-                //string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/student-images");
-                //if (!Directory.Exists(uploadsFolder))
-                //{
-                //    Directory.CreateDirectory(uploadsFolder);
-                //}
-
-                //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                //// ✅ Step 6: Save the file to the server
-                //using (var stream = new FileStream(filePath, FileMode.Create))
-                //{
-                //    await studentImage.CopyToAsync(stream);
-                //}
 
                 var student = new Student
                 {
@@ -187,7 +163,7 @@ namespace CMS.Controllers
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
                     GroupId = dto.GroupId,
-                    //StudentImg = uniqueFileName,
+                    StudentImg = imageName // store image file name or path in DB
                 };
 
                 _context.Students.Add(student);
@@ -196,36 +172,22 @@ namespace CMS.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = "Successfully inserted",
+                    message = "Student registered successfully",
                     student = new
                     {
                         student.StudentId,
-                        student.GroupId,
                         student.StudentName,
-                        student.Dob,
-                        student.Gender,
                         student.Email,
-                        student.Address,
-                        student.City,
-                        student.State,
-                        student.Phone,
+                        student.StudentImg,
                     }
                 });
             }
-            catch (FormatException)
-            {
-                return BadRequest(new { success = false, message = "Invalid date format. Please use yyyy-MM-dd." });
-            }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = ex.Message,
-                    details = ex.InnerException?.Message // Capture the real issue
-                });
+                return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
 
 
 

@@ -124,7 +124,7 @@ namespace CMS.Controllers.AdminController
 
 
         [HttpPost("AddFaculty")]
-        public async Task<IActionResult> AddFaculty([FromBody] FacultyDTO dto)
+        public async Task<IActionResult> AddFaculty([FromForm] FacultyDTO dto)
         {
             try
             {
@@ -133,6 +133,23 @@ namespace CMS.Controllers.AdminController
                 {
                     throw new Exception("Email already exists.");
                 }
+                string? imageName = null;
+
+                // Save image if provided
+                if (dto.FacultyImg != null)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "Faculty");
+                    Directory.CreateDirectory(uploadsFolder); // ensure folder exists
+
+                    imageName = Guid.NewGuid().ToString() + Path.GetExtension(dto.FacultyImg.FileName);
+                    string filePath = Path.Combine(uploadsFolder, imageName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await dto.FacultyImg.CopyToAsync(fileStream);
+                    }
+                }
+
 
                 // Auto-generate and hash password
                 string generatedPassword = GenerateSecurePassword();
@@ -148,7 +165,8 @@ namespace CMS.Controllers.AdminController
                     Experience = dto.Experience,
                     Password = hashedPassword,
                     DeptId = dto.DeptId,
-                    GroupId = 2 // Fixed for faculty
+                    GroupId = 2, // Fixed for faculty,
+                    FacultyImg = imageName,
                 };
 
                 _context.Faculties.Add(faculty);
