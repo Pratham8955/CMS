@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\uploads\Faculty\" />
-    <Folder Include="wwwroot\uploads\students\" />
+    <Folder Include="wwwroot\uploads\course-content\" />
   </ItemGroup>
 
 </Project>

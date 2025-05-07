@@ -2,6 +2,7 @@
 using CMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Controllers.FacultyController
 {
@@ -19,59 +20,160 @@ namespace CMS.Controllers.FacultyController
             _configuration = configuration;
         }
 
-        //[HttpPost("add-course-content")]
-        //public async Task<IActionResult> AddCourseContent([FromForm] CourseContentDTO courseContentDto, IFormFile pdfFile)
-        //{
-        //    // Retrieve faculty ID from the request body (sent by frontend)
-        //    var facultyId = courseContentDto.FacultyId;
-        //    var subjectId = courseContentDto.SubjectId;
+        [HttpPost("upload-course-content")]
+        public async Task<IActionResult> UploadCourseContent([FromForm] CourseContentDTO dto)
+        {
+            try
+            {
+                // ✅ Validate that faculty is allowed to upload for this subject
+                var isAssigned = await _context.FacultySubjects
+                    .AnyAsync(fs => fs.FacultyId == dto.FacultyId && fs.SubjectId == dto.SubjectId);
 
-        //    // Check if the faculty is assigned to the subject
-        //    var isAssignedToSubject = await _context.FacultySubjects
-        //        .Where(s => s.SubjectId == subjectId && s.FacultyId == facultyId)
-        //        .AnyAsync();
+                if (!isAssigned)
+                    return BadRequest(new { success = false, message = "Faculty not assigned to this subject." });
 
-        //    if (!isAssignedToSubject)
-        //    {
-        //        return Forbid("You are not assigned to this subject.");
-        //    }
+                if (dto.PdfFile == null || !dto.PdfFile.FileName.EndsWith(".pdf"))
+                    return BadRequest(new { success = false, message = "Only PDF files are allowed." });
 
-        //    if (pdfFile == null || pdfFile.Length == 0)
-        //    {
-        //        return BadRequest("No file uploaded.");
-        //    }
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "course-content");
+                Directory.CreateDirectory(uploadsFolder);
 
-        //    // Define the path to save the uploaded file (can be stored as URL or file system path)
-        //    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles", pdfFile.FileName);
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(dto.PdfFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, fileName);
 
-        //    // Ensure the directory exists
-        //    var directory = Path.GetDirectoryName(filePath);
-        //    if (!Directory.Exists(directory))
-        //    {
-        //        Directory.CreateDirectory(directory);
-        //    }
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.PdfFile.CopyToAsync(stream);
+                }
 
-        //    // Save the file to disk
-        //    using (var stream = new FileStream(filePath, FileMode.Create))
-        //    {
-        //        await pdfFile.CopyToAsync(stream);
-        //    }
+                var content = new CourseContent
+                {
+                    SubjectId = dto.SubjectId,
+                    Title = dto.Title,
+                    Description = dto.Description,
+                    FilePath = Path.Combine("uploads", "course-content", fileName).Replace("\\", "/"),
+                    UploadDate = DateTime.Now
+                };
 
-        //    // Create and save the course content entity to the database
-        //    var courseContent = new CourseContent
-        //    {
-        //        Title = courseContentDto.Title,
-        //        Description = courseContentDto.Description,
-        //        FilePath = filePath,  // Save the URL or path of the uploaded PDF
-        //        UploadDate = DateTime.Now,
-        //        SubjectId = subjectId  // Linking the content to the subject
-        //    };
+                _context.CourseContents.Add(content);
+                await _context.SaveChangesAsync();
 
-        //    _context.CourseContents.Add(courseContent);
-        //    await _context.SaveChangesAsync();
+                return Ok(new { success = true, message = "PDF uploaded successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
 
-        //    return Ok(new { Message = "Course content added successfully.", CourseContent = courseContent });
-        //}
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var contents = await _context.CourseContents
+                .Select(c => new
+                {
+                    c.ContentId,
+                    c.Title,
+                    c.Description,
+                    c.FilePath,
+                    c.SubjectId,
+                    c.UploadDate
+                }).ToListAsync();
+
+            return Ok(contents);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var content = await _context.CourseContents.FindAsync(id);
+            if (content == null)
+                return NotFound();
+
+            return Ok(content);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromForm] CourseContentDTO dto)
+        {
+            var content = await _context.CourseContents.FindAsync(id);
+            if (content == null)
+                return NotFound();
+
+            var isAssigned = await _context.FacultySubjects
+                .AnyAsync(fs => fs.FacultyId == dto.FacultyId && fs.SubjectId == dto.SubjectId);
+            if (!isAssigned)
+                return BadRequest(new { success = false, message = "Faculty not assigned to this subject." });
+
+            // 🗑️ Delete old file if a new one is uploaded
+            if (dto.PdfFile != null && dto.PdfFile.FileName.EndsWith(".pdf"))
+            {
+                // Get the old file path
+                var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", content.FilePath ?? "");
+
+                // Check if old file exists, if so, delete it
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, new { success = false, message = $"Failed to delete old file: {ex.Message}" });
+                    }
+                }
+                else
+                {
+                    // If file doesn't exist, log a warning
+                    Console.WriteLine($"Warning: Old file at {oldFilePath} not found.");
+                }
+
+                // Save the new file
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "course-content");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = Guid.NewGuid() + Path.GetExtension(dto.PdfFile.FileName);
+                var newFilePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(newFilePath, FileMode.Create))
+                {
+                    await dto.PdfFile.CopyToAsync(stream);
+                }
+
+                content.FilePath = Path.Combine("uploads", "course-content", fileName).Replace("\\", "/");
+            }
+
+            // Update other fields
+            content.Title = dto.Title;
+            content.Description = dto.Description;
+            content.SubjectId = dto.SubjectId;
+            content.UploadDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Content updated successfully." });
+        }
+
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var content = await _context.CourseContents.FindAsync(id);
+            if (content == null)
+                return NotFound();
+
+            // Optionally delete file from disk
+            var filePath = Path.Combine("wwwroot", content.FilePath);
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _context.CourseContents.Remove(content);
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Content deleted." });
+        }
 
     }
 }

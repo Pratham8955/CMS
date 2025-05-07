@@ -205,7 +205,7 @@ namespace CMS.Controllers.AdminController
 
 
         [HttpPost("UpdateFaculty/{id}")]
-        public async Task<IActionResult> UpdateFaculty(int id, [FromBody] UpdateFacultyDTO updatefaculty)
+        public async Task<IActionResult> UpdateFaculty(int id, [FromForm] UpdateFacultyDTO updatefaculty)
         {
             var faculty = await _context.Faculties.FindAsync(id);
             if (faculty == null)
@@ -213,7 +213,42 @@ namespace CMS.Controllers.AdminController
                 return NotFound($"Faculty with Id {id} Not Found");
             }
 
+            // Check if a new image is provided
+            if (updatefaculty.FacultyImg != null)
+            {
+                // Delete old image if it exists
+                if (!string.IsNullOrEmpty(faculty.FacultyImg))
+                {
+                    string oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "Faculty", faculty.FacultyImg);
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            return StatusCode(500, new { success = false, message = $"Failed to delete old image: {ex.Message}" });
+                        }
+                    }
+                }
 
+                // Save the new image
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "Faculty");
+                Directory.CreateDirectory(uploadsFolder); // Ensure folder exists
+
+                string newImageName = Guid.NewGuid().ToString() + Path.GetExtension(updatefaculty.FacultyImg.FileName);
+                string newFilePath = Path.Combine(uploadsFolder, newImageName);
+
+                using (var fileStream = new FileStream(newFilePath, FileMode.Create))
+                {
+                    await updatefaculty.FacultyImg.CopyToAsync(fileStream);
+                }
+
+                faculty.FacultyImg = newImageName; // Update the FacultyImg field
+            }
+
+            // Update the rest of the faculty fields
             faculty.FacultyName = updatefaculty.FacultyName;
             faculty.Email = updatefaculty.Email;
             faculty.Doj = updatefaculty.Doj;
@@ -221,16 +256,18 @@ namespace CMS.Controllers.AdminController
             faculty.Qualification = updatefaculty.Qualification;
             faculty.Experience = updatefaculty.Experience;
             faculty.DeptId = updatefaculty.DeptId;
+
             try
             {
                 await _context.SaveChangesAsync();
-                return NoContent();
+                return NoContent(); // No content as a response when update is successful
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating Faculty: {ex.Message}");
             }
         }
+
 
         [HttpDelete("DeleteFaculty")]
 

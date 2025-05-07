@@ -16,14 +16,15 @@ namespace CMS.DTOs.FacultyDTO
         [Required]
         public string Gender { get; set; } = null!;
 
-        public string? Qualification { get; set; } // ❌ Not required
+        public string? Qualification { get; set; }
 
-        public int? Experience { get; set; } // ❌ Not required
+        public int? Experience { get; set; } 
 
         [Required]
         public int DeptId { get; set; }
 
+
         [Required]
-        public int GroupId { get; set; }
+        public IFormFile FacultyImg { get; set; } = null!;
     }
 }
