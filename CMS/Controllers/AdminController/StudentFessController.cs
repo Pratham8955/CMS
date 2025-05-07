@@ -32,6 +32,13 @@ namespace CMS.Controllers.AdminController
             if (feeStructure == null)
                 return BadRequest(new { success = false, message = "Fee structure not found." });
 
+            // Check if a payment already exists for this student and fee structure
+            var existingPayment = await _context.StudentFees
+                                                .FirstOrDefaultAsync(p => p.StudentId == dto.StudentId && p.FeeStructureId == dto.FeeStructureId && p.Status == "Paid");
+            if (existingPayment != null)
+            {
+                return BadRequest(new { success = false, message = "Payment for this fee structure has already been made." });
+            }
 
             var payment = new StudentFee
             {
@@ -47,7 +54,6 @@ namespace CMS.Controllers.AdminController
             _context.StudentFees.Add(payment);
             await _context.SaveChangesAsync();
 
-
             var feeTypes = await _context.StudentFeesTypes
                                 .Where(sft => sft.StudentId == null && sft.FeeStructureId == dto.FeeStructureId)
                                 .ToListAsync();
@@ -59,11 +65,9 @@ namespace CMS.Controllers.AdminController
 
             foreach (var feeType in feeTypes)
             {
-
                 feeType.FeeId = payment.FeeId;  // Update FeeId to link to the payment
                 feeType.TransactionDate = payment.PaymentDate;  // Set the TransactionDate for the payment
                 feeType.StudentId = dto.StudentId;
-
             }
 
             await _context.SaveChangesAsync();
@@ -86,6 +90,7 @@ namespace CMS.Controllers.AdminController
                 }
             });
         }
+
 
 
         [HttpGet("getFeeAndPaymentDetails/{studentId}")]
