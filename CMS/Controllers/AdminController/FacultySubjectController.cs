@@ -40,6 +40,25 @@ namespace CMS.Controllers.AdminController
                 FacultySubject = Facsubject,
             });
         }
+        [HttpGet("GetFacultySubjectsForAssignedFaculty/{facultyid}")]
+
+        public async Task<IActionResult> GetFacultySubjectsForAssignedFaculty(int facultyid)
+        {
+            var Facsubject = await _context.FacultySubjects.Where(f => f.FacultyId == facultyid).Select(s => new
+            {
+                s.FacultyId,
+                s.SubjectId,
+                s.SemId,
+                subject = s.Subject.SubjectName,
+                Depname = s.Subject.Dept.DeptName
+            }).ToListAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "FacultySubjects fetch successfully.",
+                FacultySubject = Facsubject,
+            });
+        }
 
 
         //GetSubject according to sem and dep 

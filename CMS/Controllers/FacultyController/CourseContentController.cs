@@ -25,7 +25,6 @@ namespace CMS.Controllers.FacultyController
         {
             try
             {
-                // ✅ Validate that faculty is allowed to upload for this subject
                 var isAssigned = await _context.FacultySubjects
                     .AnyAsync(fs => fs.FacultyId == dto.FacultyId && fs.SubjectId == dto.SubjectId);
 

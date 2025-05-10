@@ -296,17 +296,18 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> GetFacultiesById(int id)
         {
-            var faculty = await _context.Faculties.Where(f => f.FacultyId == id).Select(f => new FacultyDTOFORIMG
+            var faculty = await _context.Faculties.Where(f => f.FacultyId == id).Select(f => new 
             {
-                FacultyId = f.FacultyId,
-                FacultyName = f.FacultyName,
-                Email = f.Email,
-                Doj = f.Doj,
-                Gender = f.Gender,
-                Qualification = f.Qualification,
-                Experience = f.Experience,
-                DeptId = f.DeptId,
-                FacultyImg=f.FacultyImg
+                 f.FacultyId,
+                 f.FacultyName,
+                 f.Email,
+                 f.Doj,
+                 f.Gender,
+                 f.Qualification,
+                 f.Experience,
+                 f.DeptId,
+                f.FacultyImg,
+                Depname= f.Dept.DeptName,
             }).ToListAsync();
             if (faculty == null)
             {
