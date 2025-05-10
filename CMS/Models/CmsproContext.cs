@@ -337,7 +337,6 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.CollegeGroundFee)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("collegeGroundFee");
-            entity.Property(e => e.FeeId).HasColumnName("feeId");
             entity.Property(e => e.FeeStructureId).HasColumnName("feeStructureId");
             entity.Property(e => e.InternalExam)
                 .HasColumnType("decimal(10, 2)")
@@ -345,23 +344,14 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.LabFees)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("labFees");
-            entity.Property(e => e.TransactionDate).HasColumnName("transactionDate");
             entity.Property(e => e.TuitionFees)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("tuitionFees");
-
-            entity.HasOne(d => d.Fee).WithMany(p => p.StudentFeesTypes)
-                .HasForeignKey(d => d.FeeId)
-                .HasConstraintName("FK_student_fees_type_student_fees_type");
 
             entity.HasOne(d => d.FeeStructure).WithMany(p => p.StudentFeesTypes)
                 .HasForeignKey(d => d.FeeStructureId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_student_fees_type_fee_structure");
-
-            entity.HasOne(d => d.Student).WithMany(p => p.StudentFeesTypes)
-                .HasForeignKey(d => d.StudentId)
-                .HasConstraintName("FK_student_fees_type_students");
         });
 
         modelBuilder.Entity<Subject>(entity =>

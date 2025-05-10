@@ -15,11 +15,10 @@ namespace CMS.DTOs.StudentFeesDTO
         [Required]
         public decimal TotalAmount { get; set; }
         
-        [Required]
         public string? Status { get; set; }
 
         public string? TransactionId { get; set; }
-        [Required]
+        
         public DateTime? PaymentDate { get; set; }
 
     }

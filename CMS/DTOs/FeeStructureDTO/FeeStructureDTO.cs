@@ -16,5 +16,6 @@ namespace CMS.DTOs.FeeStructureDTO
         public decimal DefaultAmount { get; set; }
 
         public string? FeeStructureDescription { get; set; }
+        public int FeeStructureId { get; set; }
     }
 }

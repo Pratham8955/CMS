@@ -49,6 +49,37 @@ namespace CMS.Controllers.AdminController
         }
 
 
+
+        [HttpGet("getStudentsById/{id}")]
+
+        public async Task<IActionResult> getStudentsById(int id)
+        {
+            var students = await _context.Students.Where(s => s.StudentId == id).Select(dto => new StudentDTOFORIMG
+            {
+                StudentName = dto.StudentName,
+                Email = dto.Email,
+                Dob = dto.Dob,
+                Gender = dto.Gender,
+                Address = dto.Address,
+                City = dto.City,
+                State = dto.State,
+                Phone = dto.Phone,
+                DeptId = dto.DeptId,
+                CurrentSemester = dto.CurrentSemester,
+                StudentImg = dto.StudentImg,
+                StudentId=dto.StudentId
+
+            }).ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Students Fetch Succesfully",
+                student = students
+            });
+        }
+
+
         [HttpPut("updateStudents/{id}")]
         public async Task<IActionResult> UpdateStudent(int id, [FromForm] UpdateStudentDTO updatestudent)
         {

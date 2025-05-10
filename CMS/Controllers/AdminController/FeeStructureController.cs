@@ -28,8 +28,8 @@ namespace CMS.Controllers.AdminController
                 DeptId = fs.DeptId,
                 SemId = fs.SemId,
                 DefaultAmount = fs.DefaultAmount,
-                FeeStructureDescription=fs.FeeStructureDescription
-                
+                FeeStructureDescription = fs.FeeStructureDescription
+
             }).ToListAsync();
 
             return Ok(new
@@ -39,6 +39,55 @@ namespace CMS.Controllers.AdminController
                 FeeStruct = feeStruct,
             });
         }
+
+
+        [HttpGet("getFeeStructurebydepandsem/{deptId}/{currentSemester}")]
+        public async Task<IActionResult> GetFeeStructureByDepAndSem(int deptId, int currentSemester)
+        {
+            var feeStruct = await _context.FeeStructures.Where(sem => sem.DeptId == deptId && sem.SemId == currentSemester).Select(fs => new FeeStructureDTO
+            {
+                DeptId = fs.DeptId,
+                SemId = fs.SemId,
+                DefaultAmount = fs.DefaultAmount,
+                FeeStructureDescription = fs.FeeStructureDescription,
+                FeeStructureId = fs.FeeStructureId
+
+            }).ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Fee Structure Fetched Successfully",
+                FeeStruct = feeStruct,
+            });
+        }
+
+        [HttpGet("GetExpectedFeeStructure/{studentId}")]
+        public async Task<IActionResult> GetExpectedFeeStructure(int studentId)
+        {
+            var student = await _context.Students
+                .FirstOrDefaultAsync(s => s.StudentId == studentId);
+
+            if (student == null)
+                return NotFound(new { success = false, message = "Student not found." });
+
+            var feeStructure = await _context.FeeStructures
+                .Where(fs => fs.DeptId == student.DeptId && fs.SemId == student.CurrentSemester)
+                .Select(fs => new
+                {
+                    fs.FeeStructureId,
+                    fs.DefaultAmount,
+                    DepartmentName = fs.Dept.DeptName,
+                    SemesterName = fs.Sem.SemName
+                })
+                .FirstOrDefaultAsync();
+
+            if (feeStructure == null)
+                return NotFound(new { success = false, message = "No fee structure defined for this student's department and semester." });
+
+            return Ok(feeStructure);
+        }
+
 
 
         [HttpPost("addFeeStructure")]
@@ -78,7 +127,7 @@ namespace CMS.Controllers.AdminController
                 DeptId = dTO.DeptId,
                 SemId = dTO.SemId,
                 DefaultAmount = dTO.DefaultAmount,
-                FeeStructureDescription = description 
+                FeeStructureDescription = description
             };
 
             _context.FeeStructures.Add(feeStruct);

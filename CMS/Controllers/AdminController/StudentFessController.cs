@@ -54,26 +54,6 @@ namespace CMS.Controllers.AdminController
             _context.StudentFees.Add(payment);
             await _context.SaveChangesAsync();
 
-            var feeTypes = await _context.StudentFeesTypes
-                                .Where(sft => sft.StudentId == null && sft.FeeStructureId == dto.FeeStructureId)
-                                .ToListAsync();
-
-            if (feeTypes.Count == 0)
-            {
-                return NotFound(new { success = false, message = "No matching fee types found." });
-            }
-
-            foreach (var feeType in feeTypes)
-            {
-                feeType.FeeId = payment.FeeId;  // Update FeeId to link to the payment
-                feeType.TransactionDate = payment.PaymentDate;  // Set the TransactionDate for the payment
-                feeType.StudentId = dto.StudentId;
-            }
-
-            await _context.SaveChangesAsync();
-
-            //var pdfContent = await GeneratePdfFromFeeTypes(feeTypes);
-
             return Ok(new
             {
                 success = true,
@@ -93,53 +73,51 @@ namespace CMS.Controllers.AdminController
 
 
 
-        [HttpGet("getFeeAndPaymentDetails/{studentId}")]
-        public async Task<IActionResult> GetFeeAndPaymentDetails(int studentId)
-        {
-            // Fetch fee type details
-            var feeType = await _context.StudentFeesTypes
-                .Where(sft => sft.StudentId == studentId)
-                .Select(sft => new
-                {
-                    sft.FeetypeId,
-                    sft.FeeStructureId,
-                    sft.TuitionFees,
-                    sft.LabFees,
-                    sft.CollegeGroundFee,
-                    sft.InternalExam,
-                    sft.TransactionDate
-                }).FirstOrDefaultAsync();
+        //[HttpGet("getFeeAndPaymentDetails/{studentId}")]
+        //public async Task<IActionResult> GetFeeAndPaymentDetails(int studentId )
+        //{
+        //    // Fetch fee type details
+        //    var feeType = await _context.StudentFeesTypes
+        //        .Where(sft => sft.FeeStructureId == )
+        //        .Select(sft => new
+        //        {
+        //            sft.FeetypeId,
+        //            sft.FeeStructureId,
+        //            sft.TuitionFees,
+        //            sft.LabFees,
+        //            sft.CollegeGroundFee,
+        //            sft.InternalExam,
+        //            sft.TransactionDate
+        //        }).FirstOrDefaultAsync();
 
-            if (feeType == null)
-            {
-                return NotFound(new { success = false, message = "Fee type not found." });
-            }
+        //    if (feeType == null)
+        //    {
+        //        return NotFound(new { success = false, message = "Fee type not found." });
+        //    }
 
-            // Fetch payment details
-            var paymentDetails = await _context.StudentFees
-                .Where(sf => sf.StudentId == studentId)
-                .Select(sf => new
-                {
-                    sf.FeeId,
-                    sf.PaidAmount,
-                    sf.Status,
-                    sf.TransactionId,
-                }).FirstOrDefaultAsync();
+        //    // Fetch payment details
+        //    var paymentDetails = await _context.StudentFees
+        //        .Where(sf => sf.StudentId == studentId)
+        //        .Select(sf => new
+        //        {
+        //            sf.FeeId,
+        //            sf.PaidAmount,
+        //            sf.Status,
+        //            sf.TransactionId,
+        //        }).FirstOrDefaultAsync();
 
-            if (paymentDetails == null)
-            {
-                return NotFound(new { success = false, message = "Payment details not found." });
-            }
+        //    if (paymentDetails == null)
+        //    {
+        //        return NotFound(new { success = false, message = "Payment details not found." });
+        //    }
 
-            return Ok(new
-            {
-                success = true,
-                feeType,
-                paymentDetails
-            });
-        }
-
-
+        //    return Ok(new
+        //    {
+        //        success = true,
+        //        feeType,
+        //        paymentDetails
+        //    });
+        //}
 
 
 
@@ -151,12 +129,14 @@ namespace CMS.Controllers.AdminController
 
 
 
-        [HttpGet("all-payments")]
-        public async Task<IActionResult> GetAllPayments()
-        {
-            var payments = await _context.StudentFees.Include(p => p.StudentFeesTypes).ToListAsync();
-            return Ok(new { success = true, data = payments });
-        }
+
+
+        //[HttpGet("all-payments")]
+        //public async Task<IActionResult> GetAllPayments()
+        //{
+        //    var payments = await _context.StudentFees.Include(p => p.StudentFeesTypes).ToListAsync();
+        //    return Ok(new { success = true, data = payments });
+        //}
 
         [HttpDelete("DeleteFees/{id}")]
         public async Task<IActionResult> DeleteFees(int id)
@@ -185,5 +165,58 @@ namespace CMS.Controllers.AdminController
 
             return tblpayment;
         }
+
+        [HttpGet("GetStudentFee/{studentId}")]
+        public async Task<IActionResult> GetStudentFee(int studentId)
+        {
+            var fee = await _context.StudentFees
+                .Where(f => f.StudentId == studentId)
+                .Select(f => new
+                {
+                    f.FeeId,
+                    f.StudentId,
+                    f.FeeStructureId,
+                    f.TotalAmount,
+                    f.PaidAmount,
+                    f.Status,
+                    f.TransactionId,
+                    f.PaymentDate,
+                    DepartmentName = f.FeeStructure.Dept.DeptName,
+                    SemesterName = f.FeeStructure.Sem.SemName,
+                    Student_Name = f.Student.StudentName,
+                    FeeType = _context.StudentFeesTypes
+                                .Where(ft => ft.FeeStructureId == f.FeeStructureId)
+                                .Select(ft => new
+                                {
+                                    ft.TuitionFees,
+                                    ft.LabFees,
+                                    ft.CollegeGroundFee,
+                                    ft.InternalExam
+                                })
+                                .FirstOrDefault()
+                })
+                .FirstOrDefaultAsync();
+
+            if (fee == null)
+                return NotFound(new { success = false, message = "No fee record found for this student." });
+
+            return Ok(fee);
+        }
+
+
+
+        [HttpGet("CheckPaymentStatus/{studentId}/{feeStructureId}")]
+        public async Task<IActionResult> CheckPaymentStatus(int studentId, int feeStructureId)
+        {
+            var hasPaid = await _context.StudentFees
+                .AnyAsync(p => p.StudentId == studentId && p.FeeStructureId == feeStructureId && p.Status == "Paid");
+
+            return Ok(new
+            {
+                success = true,
+                isPaid = hasPaid
+            });
+        }
+
     }
 }

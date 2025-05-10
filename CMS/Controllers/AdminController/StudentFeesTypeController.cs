@@ -55,9 +55,7 @@ namespace CMS.Controllers.AdminController
                 TuitionFees = tuitionFees,
                 LabFees = labFees,
                 CollegeGroundFee = collegeGroundFee,
-                InternalExam = internalExam,
-                FeeId = null,
-                TransactionDate = null
+                InternalExam = internalExam
             };
 
             _context.StudentFeesTypes.Add(feeType);
@@ -74,8 +72,7 @@ namespace CMS.Controllers.AdminController
                     feeType.TuitionFees,
                     feeType.LabFees,
                     feeType.CollegeGroundFee,
-                    feeType.InternalExam,
-                    feeType.TransactionDate
+                    feeType.InternalExam
                 }
             });
         }
@@ -92,9 +89,7 @@ namespace CMS.Controllers.AdminController
                 TuitionFees = s.TuitionFees,
                 LabFees = s.LabFees,
                 CollegeGroundFee = s.CollegeGroundFee,
-                InternalExam = s.InternalExam,
-                TransactionDate = s.TransactionDate,
-                FeeId = s.FeeId
+                InternalExam = s.InternalExam
             }).ToListAsync();
             return Ok(new
             {
@@ -136,9 +131,7 @@ namespace CMS.Controllers.AdminController
             feeType.LabFees = dto.LabFees;
             feeType.CollegeGroundFee = dto.CollegeGroundFee;
             feeType.InternalExam = dto.InternalExam;
-            feeType.TransactionDate = dto.TransactionDate;
-            feeType.FeeId = dto.FeeId;
-            feeType.StudentId = dto.StudentId;
+
             try
             {
                 await _context.SaveChangesAsync();

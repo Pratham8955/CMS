@@ -24,6 +24,4 @@ public partial class StudentFee
     public virtual FeeStructure FeeStructure { get; set; } = null!;
 
     public virtual Student Student { get; set; } = null!;
-
-    public virtual ICollection<StudentFeesType> StudentFeesTypes { get; set; } = new List<StudentFeesType>();
 }

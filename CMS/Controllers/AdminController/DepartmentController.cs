@@ -38,13 +38,29 @@ namespace CMS.Controllers.AdminController
                 Department = department,
             });
         }
+        [HttpGet("GetDepartmentById/{id}")]
+        public async Task<IActionResult> GetDepartment(int id)
+        {
+            var department = await _context.Departments.Where(d => d.DeptId == id).Select(s => new DepartmentsDTO
+            {
+                DeptId = s.DeptId,
+                DeptName = s.DeptName,
+                HeadOfDept = s.HeadOfDept,
+            }).ToListAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "Departments fetch successfully.",
+                Department = department,
+            });
+        }
 
         [HttpPost("AddDepartment")]
         public async Task<IActionResult> AddDepartment([FromBody] DepartmentsDTO addDepartment)
         {
             try
             {
-                if (_context.Departments.Any(fs => fs.DeptName == addDepartment.DeptName ))
+                if (_context.Departments.Any(fs => fs.DeptName == addDepartment.DeptName))
                 {
                     return BadRequest(new
                     {
