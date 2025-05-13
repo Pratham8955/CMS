@@ -24,13 +24,11 @@ namespace CMS.DTOs.FacultyDTO
         [Required]
         public int? Experience { get; set; }
 
-        // Optional — remove Required and MinLength
         public string? Password { get; set; }
 
         [Required]
         public int DeptId { get; set; }
 
-        // Optional — hardcoded as 2 in backend
         public int GroupId { get; set; }
 
         [Required]

@@ -31,84 +31,6 @@ namespace CMS.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/Students
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
-        //{
-        //    return await _context.Students.ToListAsync();
-        //}
-
-        // GET: api/Students/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<Student>> GetStudent(int id)
-        //{
-        //    var student = await _context.Students.FindAsync(id);
-
-        //    if (student == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return student;
-        //}
-
-        // PUT: api/Students/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutStudent(int id, Student student)
-        //{
-        //    if (id != student.StudentId)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(student).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!StudentExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
-
-        // POST: api/Students
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Student>> PostStudent(Student student)
-        //{
-        //    _context.Students.Add(student);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetStudent", new { id = student.StudentId }, student);
-        //}
-
-        // DELETE: api/Students/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteStudent(int id)
-        //{
-        //    var student = await _context.Students.FindAsync(id);
-        //    if (student == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    _context.Students.Remove(student);
-        //    await _context.SaveChangesAsync();
-
-        //    return NoContent();
-        //}
         [HttpGet("fetchroles")]
         public async Task<ActionResult> FetchRoles()
         {
@@ -124,6 +46,69 @@ namespace CMS.Controllers
         }
 
 
+        private string GenerateSecurePassword(int length = 10)
+        {
+            const string lower = "abcdefghijklmnopqrstuvwxyz";
+            const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string digits = "0123456789";
+            const string special = "!@#$%^&*";
+
+            var random = new Random();
+            var chars = new List<char>
+    {
+        upper[random.Next(upper.Length)],
+        special[random.Next(special.Length)],
+        digits[random.Next(digits.Length)],
+        lower[random.Next(lower.Length)],
+    };
+
+            string allChars = lower + upper + digits + special;
+            for (int i = chars.Count; i < length; i++)
+            {
+                chars.Add(allChars[random.Next(allChars.Length)]);
+            }
+
+            return new string(chars.OrderBy(x => random.Next()).ToArray());
+        }
+
+
+        private async Task<bool> SendStudentEmail(string toEmail, string StudentName, string plainPassword)
+        {
+            try
+            {
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "StudentEmailTemplate.html");
+                string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
+
+                emailBody = emailBody
+                    .Replace("{{StudentName}}", StudentName)
+                    .Replace("{{Email}}", toEmail)
+                    .Replace("{{Password}}", plainPassword);
+
+                using var smtp = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential("salipratham033@gmail.com", "zlbd txsz xmso uswe"),
+                    EnableSsl = true,
+                };
+
+                var mailMsg = new MailMessage
+                {
+                    From = new MailAddress("salipratham033@gmail.com"),
+                    Subject = "Your Student Login Credentials",
+                    Body = emailBody,
+                    IsBodyHtml = true,
+                };
+
+                mailMsg.To.Add(toEmail);
+                await smtp.SendMailAsync(mailMsg);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         [HttpPost("register-student")]
         public async Task<IActionResult> RegisterStudent([FromForm] StudentDTO dto)
         {
@@ -134,11 +119,11 @@ namespace CMS.Controllers
 
                 string? imageName = null;
 
-                // Save image if provided
+           
                 if (dto.StudentImg != null)
                 {
                     string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students");
-                    Directory.CreateDirectory(uploadsFolder); // ensure folder exists
+                    Directory.CreateDirectory(uploadsFolder); 
 
                     imageName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StudentImg.FileName);
                     string filePath = Path.Combine(uploadsFolder, imageName);
@@ -149,11 +134,13 @@ namespace CMS.Controllers
                     }
                 }
 
+                string generatedPassword = GenerateSecurePassword();
+                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(generatedPassword);
                 var student = new Student
                 {
                     StudentName = dto.StudentName,
                     Email = dto.Email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    Password = hashedPassword,
                     Dob = dto.Dob,
                     Gender = dto.Gender,
                     Address = dto.Address,
@@ -162,13 +149,14 @@ namespace CMS.Controllers
                     Phone = dto.Phone,
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
-                    GroupId = dto.GroupId,
-                    StudentImg = imageName // store image file name or path in DB
+                    GroupId = 3,
+                    StudentImg = imageName 
                 };
 
                 _context.Students.Add(student);
                 await _context.SaveChangesAsync();
 
+                await SendStudentEmail(dto.Email, dto.StudentName, generatedPassword);
                 return Ok(new
                 {
                     success = true,

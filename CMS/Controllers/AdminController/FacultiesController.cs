@@ -35,18 +35,19 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> GetFaculties()
         {
-            var faculty = await _context.Faculties.Select(f => new FacultyDTO
+            var faculty = await _context.Faculties.Select(f => new
             {
-                FacultyId = f.FacultyId,
-                FacultyName = f.FacultyName,
-                Email = f.Email,
-                Doj = f.Doj,
-                Gender = f.Gender,
-                Qualification = f.Qualification,
-                Experience = f.Experience,
-                Password = f.Password,
-                DeptId = f.DeptId,
-                GroupId = f.GroupId,
+                f.FacultyId,
+                f.FacultyName,
+                f.Email,
+                f.Doj,
+                f.Gender,
+                f.Qualification,
+                f.Experience,
+                f.Password,
+                f.DeptId,
+                f.GroupId,
+                f.FacultyImg,
             }).ToListAsync();
             return Ok(new
             {
@@ -151,7 +152,7 @@ namespace CMS.Controllers.AdminController
                 }
 
 
-                // Auto-generate and hash password
+                
                 string generatedPassword = GenerateSecurePassword();
                 string hashedPassword = BCrypt.Net.BCrypt.HashPassword(generatedPassword);
 
@@ -296,18 +297,18 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> GetFacultiesById(int id)
         {
-            var faculty = await _context.Faculties.Where(f => f.FacultyId == id).Select(f => new 
+            var faculty = await _context.Faculties.Where(f => f.FacultyId == id).Select(f => new
             {
-                 f.FacultyId,
-                 f.FacultyName,
-                 f.Email,
-                 f.Doj,
-                 f.Gender,
-                 f.Qualification,
-                 f.Experience,
-                 f.DeptId,
+                f.FacultyId,
+                f.FacultyName,
+                f.Email,
+                f.Doj,
+                f.Gender,
+                f.Qualification,
+                f.Experience,
+                f.DeptId,
                 f.FacultyImg,
-                Depname= f.Dept.DeptName,
+                Depname = f.Dept.DeptName,
             }).ToListAsync();
             if (faculty == null)
             {

@@ -11,8 +11,6 @@ namespace CMS.DTOs.StudentDTO
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
 
-        [Required, MinLength(6)]
-        public string Password { get; set; } = null!;
 
         [Required]
         public DateOnly Dob { get; set; }
@@ -38,8 +36,6 @@ namespace CMS.DTOs.StudentDTO
         [Required]
         public int CurrentSemester { get; set; }
 
-        [Required]
-        public int GroupId { get; set; }
 
         [Required]
         public IFormFile StudentImg { get; set; } = null!;

@@ -34,7 +34,6 @@ namespace CMS.DTOs.StudentDTO
         [Required]
         public int CurrentSemester { get; set; }
 
-
         [Required]
         public IFormFile StudentImg { get; set; } = null!;
 
