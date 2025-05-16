@@ -6,6 +6,7 @@ using CMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CMS.DTOs.GroupMasterDTO;
 
 namespace CMS.Controllers.AdminController
 {
@@ -70,6 +71,14 @@ namespace CMS.Controllers.AdminController
             {
                 return NotFound(new { success = false, message = "Student not found." });
             }
+
+            var oldPasswordHash = data.Password;
+
+            if (BCrypt.Net.BCrypt.Verify(forgetPassStudent.Password, oldPasswordHash))
+            {
+                return BadRequest(new { success = false, message = "New password cannot be same as old password." });
+            }
+
             try
             {
                 data.Password = BCrypt.Net.BCrypt.HashPassword(forgetPassStudent.Password);
@@ -92,6 +101,14 @@ namespace CMS.Controllers.AdminController
             {
                 return NotFound(new { success = false, message = "Faculty not found." });
             }
+
+            var oldPasswordHash = data.Password;
+
+            if (BCrypt.Net.BCrypt.Verify(forgetPassFaculty.Password, oldPasswordHash))
+            {
+                return BadRequest(new { success = false, message = "New password cannot be same as old password." });
+            }
+
             try
             {
                 data.Password = BCrypt.Net.BCrypt.HashPassword(forgetPassFaculty.Password);
@@ -104,11 +121,39 @@ namespace CMS.Controllers.AdminController
             }
         }
 
+        [HttpPost("send-otp")]
+        public async Task<ActionResult> SendOtp([FromBody] SendOtpDTO sendOtpDto)
+        {
+            var otp = new Random().Next(100000, 999999).ToString();
+            HttpContext.Session.SetString("otp", otp);
+            HttpContext.Session.SetString("otpEmail", sendOtpDto.Email);
+
+            bool emailSent = await SendEmail(sendOtpDto.Email, otp);
+
+            if (!emailSent)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "failed to send OTP."
+                });
+            }
+            else
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = "OTP sent Successfully."
+                });
+            }
+        }
+
+        // email sending method
         private async Task<bool> SendEmail(string email, string otp)
         {
             try
             {
-                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "OtpTemplate.html");
+                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "ForgetPassword.html");
                 string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
 
                 emailBody = emailBody.Replace("{{OTP}}", otp);
@@ -123,7 +168,7 @@ namespace CMS.Controllers.AdminController
                 var mailMsg = new MailMessage
                 {
                     From = new MailAddress("salipratham033@gmail.com"),
-                    Subject = "Your OTP code for Registration.",
+                    Subject = "Your OTP code for Reset Password.",
                     Body = emailBody,
                     IsBodyHtml = true,
 
@@ -138,5 +183,80 @@ namespace CMS.Controllers.AdminController
                 return false;
             }
         }
+
+
+        // verify otp functionality
+        [HttpPost("verify-otp")]
+        public async Task<ActionResult> VerifyOtp([FromBody] VerifyOtpDto verifyOtpDto)
+        {
+            var sessionOtp = HttpContext.Session.GetString("otp");
+            var sessionEmail = HttpContext.Session.GetString("otpEmail");
+
+            if (sessionOtp == null || sessionEmail == null || sessionOtp != verifyOtpDto.Otp || sessionEmail != verifyOtpDto.Email)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Invalid Or Expired OTP."
+                });
+            }
+
+            HttpContext.Session.Remove("otp");
+            HttpContext.Session.Remove("otpEmail");
+
+            return Ok(new
+            {
+                success = true,
+                message = "OTP Verified Successfully."
+            });
+        }
+
+        [HttpGet("departmentCounts/{depid}")]
+        public async Task<IActionResult> GetDepartmentCounts(int depid)
+        {
+            var dep = await _context.Departments.FindAsync(depid);
+            if (dep == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Department not found."
+                });
+            }
+
+            var countFaculty = await _context.Faculties
+                .Where(f => f.DeptId == depid)
+                .CountAsync();
+
+            var studentIds = await _context.Students
+                .Where(s => s.DeptId == depid)
+                .Select(s => s.StudentId)
+                .ToListAsync();
+
+            var countStudent = studentIds.Count;
+
+            // FIXED: Use AsEnumerable to avoid WITH clause syntax error
+            var paidStudentIds = _context.StudentFees
+                .AsEnumerable()
+                .Where(f => studentIds.Contains(f.StudentId) && f.Status == "Paid")
+                .Select(f => f.StudentId)
+                .Distinct()
+                .ToList();
+
+            var paidCount = paidStudentIds.Count;
+            var unpaidCount = countStudent - paidCount;
+
+            return Ok(new
+            {
+                success = true,
+                message = "Counts fetched successfully.",
+                CountFaculty = countFaculty,
+                CountStudent = countStudent,
+                PaidCount = paidCount,
+                UnpaidCount = unpaidCount
+            });
+        }
+
+
     }
 }

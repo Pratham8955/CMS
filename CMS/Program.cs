@@ -18,11 +18,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(op =>
 {
-    op.IdleTimeout = TimeSpan.FromMinutes(5);  // ✅ Use IdleTimeout instead of IOTimeout
+    op.IdleTimeout = TimeSpan.FromMinutes(5);
     op.Cookie.HttpOnly = true;
     op.Cookie.IsEssential = true;
-    op.Cookie.SameSite = SameSiteMode.None;  // ✅ Required for cross-origin cookies
-    op.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // ✅ Required for HTTPS
+    op.Cookie.SameSite = SameSiteMode.None;
+    op.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // JWT Authentication
@@ -47,10 +47,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:3000")  // ✅ Use your frontend URL
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials());  // ✅ Required for JWT authentication & cookies
+              .AllowCredentials());
 });
 
 var app = builder.Build();
@@ -66,14 +66,12 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-// ✅ Fix: Apply only "AllowFrontend" policy and move it before Authentication & Authorization
 app.UseCors("AllowFrontend");
 
-app.UseSession();  // ✅ Place before Authentication to ensure cookies work
+app.UseSession();
 
-app.UseAuthentication(); // ✅ Added to ensure JWT Authentication is enabled
-app.UseAuthorization(); // Add this line
-
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

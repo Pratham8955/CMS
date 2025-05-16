@@ -82,14 +82,31 @@ namespace CMS.Controllers.FacultyController
             return Ok(contents);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("GetByIdforstudent/{id}")]
+        public async Task<IActionResult> GetByIdforstudent(int id)
         {
-            var content = await _context.CourseContents.FindAsync(id);
-            if (content == null)
-                return NotFound();
+            var student = await _context.Students.FindAsync(id);
 
-            return Ok(content);
+            if (student == null)
+            {
+                return NotFound("Student not found.");
+            }
+            int studepid = student.DeptId;
+            int stusemid = student.CurrentSemester;
+
+            var content = await _context.CourseContents.Include(cc => cc.Subject).Where(cc => cc.Subject.DeptId == studepid && cc.Subject.SemId == stusemid).Select(cc => new ViewCourseContent
+            {
+                SubjectId = cc.SubjectId,
+                Title = cc.Title,
+                FilePath = cc.FilePath
+            }).ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Content fetch successfully.",
+                Content = content,
+            });
         }
 
         [HttpPut("{id}")]
@@ -104,7 +121,7 @@ namespace CMS.Controllers.FacultyController
             if (!isAssigned)
                 return BadRequest(new { success = false, message = "Faculty not assigned to this subject." });
 
-            // 🗑️ Delete old file if a new one is uploaded
+            // Delete old file if a new one is uploaded
             if (dto.PdfFile != null && dto.PdfFile.FileName.EndsWith(".pdf"))
             {
                 // Get the old file path

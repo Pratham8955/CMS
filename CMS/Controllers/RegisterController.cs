@@ -119,11 +119,11 @@ namespace CMS.Controllers
 
                 string? imageName = null;
 
-           
+
                 if (dto.StudentImg != null)
                 {
                     string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students");
-                    Directory.CreateDirectory(uploadsFolder); 
+                    Directory.CreateDirectory(uploadsFolder);
 
                     imageName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StudentImg.FileName);
                     string filePath = Path.Combine(uploadsFolder, imageName);
@@ -150,7 +150,7 @@ namespace CMS.Controllers
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
                     GroupId = 3,
-                    StudentImg = imageName 
+                    StudentImg = imageName
                 };
 
                 _context.Students.Add(student);
@@ -176,98 +176,6 @@ namespace CMS.Controllers
             }
         }
 
-
-
-
-        [HttpPost("send-otp")]
-        public async Task<ActionResult> SendOtp([FromBody] SendOtpDTO sendOtpDto)
-        {
-            var otp = new Random().Next(100000, 999999).ToString();
-            HttpContext.Session.SetString("otp", otp);
-            HttpContext.Session.SetString("otpEmail", sendOtpDto.Email);
-
-            bool emailSent = await SendEmail(sendOtpDto.Email, otp);
-
-            if (!emailSent)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "failed to send OTP."
-                });
-            }
-            else
-            {
-                return Ok(new
-                {
-                    success = true,
-                    message = "OTP sent Successfully."
-                });
-            }
-        }
-
-        // email sending method
-        private async Task<bool> SendEmail(string email, string otp)
-        {
-            try
-            {
-                string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "OtpTemplate.html");
-                string emailBody = await System.IO.File.ReadAllTextAsync(templatePath);
-
-                emailBody = emailBody.Replace("{{OTP}}", otp);
-
-                using var smtp = new SmtpClient("smtp.gmail.com")
-                {
-                    Port = 587,
-                    Credentials = new NetworkCredential("salipratham033@gmail.com", "zlbd txsz xmso uswe"),
-                    EnableSsl = true,
-                };
-
-                var mailMsg = new MailMessage
-                {
-                    From = new MailAddress("salipratham033@gmail.com"),
-                    Subject = "Your OTP code for Registration.",
-                    Body = emailBody,
-                    IsBodyHtml = true,
-
-                };
-
-                mailMsg.To.Add(email);
-                await smtp.SendMailAsync(mailMsg);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-
-        // verify otp functionality
-        [HttpPost("verify-otp")]
-        public async Task<ActionResult> VerifyOtp([FromBody] VerifyOtpDto verifyOtpDto)
-        {
-            var sessionOtp = HttpContext.Session.GetString("otp");
-            var sessionEmail = HttpContext.Session.GetString("otpEmail");
-
-            if (sessionOtp == null || sessionEmail == null || sessionOtp != verifyOtpDto.Otp || sessionEmail != verifyOtpDto.Email)
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Invalid Or Expired OTP."
-                });
-            }
-
-            HttpContext.Session.Remove("otp");
-            HttpContext.Session.Remove("otpEmail");
-
-            return Ok(new
-            {
-                success = true,
-                message = "OTP Verified Successfully."
-            });
-        }
 
         [HttpPost("loginStudent")]
         public async Task<ActionResult> loginStudent([FromBody] LoginUserDTO loginUserDto)

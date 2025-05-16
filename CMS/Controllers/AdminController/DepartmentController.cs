@@ -46,6 +46,22 @@ namespace CMS.Controllers.AdminController
                 DeptId = s.DeptId,
                 DeptName = s.DeptName,
                 HeadOfDept = s.HeadOfDept,
+            }).FirstOrDefaultAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "Departments fetch successfully.",
+                Department = department,
+            });
+        }
+        [HttpGet("GetDepartmentByFacultyId/{id}")]
+        public async Task<IActionResult> GetDepartmentByFacultyId(int id)
+        {
+            var department = await _context.Departments.Where(d => d.HeadOfDept == id).Select(s => new DepartmentsDTO
+            {
+                DeptId = s.DeptId,
+                DeptName = s.DeptName,
+                HeadOfDept = s.HeadOfDept,
             }).ToListAsync();
             return Ok(new
             {

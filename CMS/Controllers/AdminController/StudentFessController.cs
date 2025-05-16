@@ -73,70 +73,55 @@ namespace CMS.Controllers.AdminController
 
 
 
-        //[HttpGet("getFeeAndPaymentDetails/{studentId}")]
-        //public async Task<IActionResult> GetFeeAndPaymentDetails(int studentId )
-        //{
-        //    // Fetch fee type details
-        //    var feeType = await _context.StudentFeesTypes
-        //        .Where(sft => sft.FeeStructureId == )
-        //        .Select(sft => new
-        //        {
-        //            sft.FeetypeId,
-        //            sft.FeeStructureId,
-        //            sft.TuitionFees,
-        //            sft.LabFees,
-        //            sft.CollegeGroundFee,
-        //            sft.InternalExam,
-        //            sft.TransactionDate
-        //        }).FirstOrDefaultAsync();
-
-        //    if (feeType == null)
-        //    {
-        //        return NotFound(new { success = false, message = "Fee type not found." });
-        //    }
-
-        //    // Fetch payment details
-        //    var paymentDetails = await _context.StudentFees
-        //        .Where(sf => sf.StudentId == studentId)
-        //        .Select(sf => new
-        //        {
-        //            sf.FeeId,
-        //            sf.PaidAmount,
-        //            sf.Status,
-        //            sf.TransactionId,
-        //        }).FirstOrDefaultAsync();
-
-        //    if (paymentDetails == null)
-        //    {
-        //        return NotFound(new { success = false, message = "Payment details not found." });
-        //    }
-
-        //    return Ok(new
-        //    {
-        //        success = true,
-        //        feeType,
-        //        paymentDetails
-        //    });
-        //}
 
 
+        [HttpGet("all-payments")]
+        public async Task<IActionResult> GetAllPayments()
+        {
+            var payments = await _context.StudentFees.Select(sub => new
+            {
+                sub.FeeId,
+                sub.StudentId,
+                sub.FeeStructureId,
+                sub.PaidAmount,
+                sub.TotalAmount,
+                sub.Status,
+                sub.TransactionId,
+                sub.PaymentDate
+            }).ToListAsync();
+            return Ok(new { success = true, data = payments });
+        }
 
+        [HttpGet("allpaymentsByDep/{id}")]
+        public async Task<IActionResult> GetAllPaymentsByDep(int id)
+        {
+            var dep = await _context.Departments.FindAsync(id);
+            var depid = dep.DeptId;
+            if (depid == null)
+            {
+                return NotFound();
+            }
 
-
-
-
-
-
-
-
-
-
-        //[HttpGet("all-payments")]
-        //public async Task<IActionResult> GetAllPayments()
-        //{
-        //    var payments = await _context.StudentFees.Include(p => p.StudentFeesTypes).ToListAsync();
-        //    return Ok(new { success = true, data = payments });
-        //}
+            var payments = await _context.Students.Where(pay => pay.DeptId == depid).Select(student => new
+            {
+                student.StudentId,
+                student.StudentName,
+                Fees = _context.StudentFees
+                .Where(fee => fee.StudentId == student.StudentId)
+                .Select(fee => new
+                {
+                    fee.FeeId,
+                    fee.FeeStructureId,
+                    fee.PaidAmount,
+                    fee.TotalAmount,
+                    fee.Status,
+                    fee.TransactionId,
+                    fee.PaymentDate
+                })
+                .FirstOrDefault()
+            }).ToListAsync();
+            return Ok(new { success = true, data = payments });
+        }
 
         [HttpDelete("DeleteFees/{id}")]
         public async Task<IActionResult> DeleteFees(int id)

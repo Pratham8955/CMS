@@ -128,6 +128,24 @@ namespace CMS.Controllers.AdminController
                 return StatusCode(500, $"Error Deleting Subjects {ex.Message}");
             }
         }
+
+        [HttpGet("GetSubjectsByStudent/{depid}/{semid}")]
+        public async Task<IActionResult> GetSubjectsByStudent(int depid, int semid)
+        {
+            var subject = await _context.Subjects.Where(sc => sc.DeptId == depid && sc.SemId == semid).Select(s => new SubjectDTO
+            {
+                SubjectId = s.SubjectId,
+                SubjectName = s.SubjectName,
+                DeptId = s.DeptId,
+                SemId = s.SemId
+            }).ToListAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "Subjects fetch successfully.",
+                Subject = subject,
+            });
+        }
     }
 
 }
