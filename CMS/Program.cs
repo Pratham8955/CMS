@@ -21,8 +21,8 @@ builder.Services.AddSession(op =>
     op.IdleTimeout = TimeSpan.FromMinutes(5);
     op.Cookie.HttpOnly = true;
     op.Cookie.IsEssential = true;
-    op.Cookie.SameSite = SameSiteMode.None;
-    op.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    op.Cookie.SameSite = SameSiteMode.Lax; // Changed to Lax for better compatibility
+    op.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 // JWT Authentication
@@ -30,7 +30,7 @@ var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(op =>
     {
-        op.RequireHttpsMetadata = false;
+        op.RequireHttpsMetadata = false; // You want HTTP as well, so this is fine
         op.SaveToken = true;
         op.TokenValidationParameters = new TokenValidationParameters
         {
@@ -43,17 +43,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ✅ Fix: Only use ONE CORS policy (AllowFrontend)
+// ✅ CORS Policy Update:
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:3000", "http://10.0.2.2:5291")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials());
+        policy.WithOrigins(
+            "http://localhost:3000",
+            "http://10.0.2.2:5291",   // HTTP for Android
+            "https://10.0.2.2:7133"  // HTTPS for Android
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 });
 
 var app = builder.Build();
+
+// ✅ Add URLs for HTTP and HTTPS both:
+app.Urls.Add("http://*:5291");
+app.Urls.Add("https://*:7133");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -62,17 +70,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseCors("AllowFrontend");
-
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
