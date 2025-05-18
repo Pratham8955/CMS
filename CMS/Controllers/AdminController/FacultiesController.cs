@@ -271,7 +271,6 @@ namespace CMS.Controllers.AdminController
 
 
         [HttpDelete("DeleteFaculty")]
-
         public async Task<IActionResult> DeleteFaculty(int id)
         {
             var faculty = await _context.Faculties.FindAsync(id);
@@ -281,6 +280,16 @@ namespace CMS.Controllers.AdminController
             }
             try
             {
+                // Delete faculty image file if exists
+                if (!string.IsNullOrEmpty(faculty.FacultyImg))
+                {
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "Faculty", faculty.FacultyImg);
+                    if (System.IO.File.Exists(imagePath))
+                    {
+                        System.IO.File.Delete(imagePath);
+                    }
+                }
+
                 _context.Faculties.Remove(faculty);
                 await _context.SaveChangesAsync();
                 return NoContent();
@@ -290,6 +299,7 @@ namespace CMS.Controllers.AdminController
                 return StatusCode(500, $"Error Deleting Faculty: {ex.Message}");
             }
         }
+
 
 
 

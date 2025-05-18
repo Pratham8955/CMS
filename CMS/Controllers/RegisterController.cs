@@ -117,15 +117,25 @@ namespace CMS.Controllers
                 if (_context.Students.Any(u => u.Email == dto.Email))
                     throw new Exception("Email Already Exists.");
 
+                var allowedImageExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var allowedPdfMime = "application/pdf";
+
                 string? imageName = null;
 
-
+                // Upload Student Image
                 if (dto.StudentImg != null)
                 {
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students");
+                    var imgExtension = Path.GetExtension(dto.StudentImg.FileName).ToLower();
+                    if (!allowedImageExtensions.Contains(imgExtension))
+                        throw new Exception("Only JPG, JPEG, PNG, or WEBP files are allowed for image.");
+
+                    if (!dto.StudentImg.ContentType.StartsWith("image/"))
+                        throw new Exception("Invalid image MIME type.");
+
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "studentProfile");
                     Directory.CreateDirectory(uploadsFolder);
 
-                    imageName = Guid.NewGuid().ToString() + Path.GetExtension(dto.StudentImg.FileName);
+                    imageName = Guid.NewGuid().ToString() + imgExtension;
                     string filePath = Path.Combine(uploadsFolder, imageName);
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
@@ -134,8 +144,41 @@ namespace CMS.Controllers
                     }
                 }
 
+                // Upload 10th Marksheet
+                if (dto.TenthMarksheet == null || dto.TenthMarksheet.ContentType != allowedPdfMime)
+                    throw new Exception("Tenth marksheet must be a valid PDF.");
+
+                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets");
+                Directory.CreateDirectory(folder);
+
+                string tenthfilename = Path.GetFileNameWithoutExtension(dto.TenthMarksheet.FileName)
+                                       + "_" + DateTime.Now.Ticks
+                                       + Path.GetExtension(dto.TenthMarksheet.FileName);
+                string tenthpath = Path.Combine(folder, tenthfilename);
+
+                using (var stream = new FileStream(tenthpath, FileMode.Create))
+                {
+                    await dto.TenthMarksheet.CopyToAsync(stream);
+                }
+
+                // Upload 12th Marksheet
+                if (dto.TwelfthMarksheet == null || dto.TwelfthMarksheet.ContentType != allowedPdfMime)
+                    throw new Exception("Twelfth marksheet must be a valid PDF.");
+
+                string twelfthfilename = Path.GetFileNameWithoutExtension(dto.TwelfthMarksheet.FileName)
+                                         + "_" + DateTime.Now.Ticks
+                                         + Path.GetExtension(dto.TwelfthMarksheet.FileName);
+                string twelfthpath = Path.Combine(folder, twelfthfilename); // Reuse tenthfolder
+
+                using (var stream = new FileStream(twelfthpath, FileMode.Create))
+                {
+                    await dto.TwelfthMarksheet.CopyToAsync(stream);
+                }
+
+                // Generate and hash password
                 string generatedPassword = GenerateSecurePassword();
                 string hashedPassword = BCrypt.Net.BCrypt.HashPassword(generatedPassword);
+
                 var student = new Student
                 {
                     StudentName = dto.StudentName,
@@ -150,13 +193,22 @@ namespace CMS.Controllers
                     DeptId = dto.DeptId,
                     CurrentSemester = dto.CurrentSemester,
                     GroupId = 3,
-                    StudentImg = imageName
+                    StudentImg = imageName,
+                    TenthPassingYear = dto.TenthPassingYear,
+                    TenthPercentage = dto.TenthPercentage,
+                    TenthSchool = dto.TenthSchool,
+                    Tenthmarksheet = tenthfilename,
+                    TwelfthPassingYear = dto.TwelfthPassingYear,
+                    TwelfthPercentage = dto.TwelfthPercentage,
+                    TwelfthSchool = dto.TwelfthSchool,
+                    TwelfthMarksheet = twelfthfilename
                 };
 
                 _context.Students.Add(student);
                 await _context.SaveChangesAsync();
 
                 await SendStudentEmail(dto.Email, dto.StudentName, generatedPassword);
+
                 return Ok(new
                 {
                     success = true,
@@ -166,7 +218,24 @@ namespace CMS.Controllers
                         student.StudentId,
                         student.StudentName,
                         student.Email,
+                        student.Dob,
+                        student.Gender,
+                        student.Address,
+                        student.City,
+                        student.State,
+                        student.Phone,
+                        student.DeptId,
+                        student.CurrentSemester,
+                        student.GroupId,
                         student.StudentImg,
+                        student.TenthSchool,
+                        student.TenthPassingYear,
+                        student.TenthPercentage,
+                        student.Tenthmarksheet,
+                        student.TwelfthSchool,
+                        student.TwelfthPassingYear,
+                        student.TwelfthPercentage,
+                        student.TwelfthMarksheet
                     }
                 });
             }
@@ -175,6 +244,8 @@ namespace CMS.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+
 
 
         [HttpPost("loginStudent")]

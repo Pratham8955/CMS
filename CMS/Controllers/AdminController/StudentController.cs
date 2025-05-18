@@ -26,8 +26,9 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> getStudents()
         {
-            var students = await _context.Students.Select(dto => new StudentDTO
+            var students = await _context.Students.Select(dto => new StudentDTOFORIMG
             {
+                StudentId=dto.StudentId,
                 StudentName = dto.StudentName,
                 Email = dto.Email,
                 Dob = dto.Dob,
@@ -38,6 +39,15 @@ namespace CMS.Controllers.AdminController
                 Phone = dto.Phone,
                 DeptId = dto.DeptId,
                 CurrentSemester = dto.CurrentSemester,
+                StudentImg=dto.StudentImg,
+                TenthPassingYear = dto.TenthPassingYear,
+                TenthPercentage=dto.TenthPercentage,
+                TenthSchool=dto.TenthSchool,
+                Tenthmarksheet=dto.Tenthmarksheet,
+                TwelfthMarksheet=dto.TwelfthMarksheet,
+                TwelfthPassingYear=dto.TwelfthPassingYear,
+                TwelfthPercentage=dto.TwelfthPercentage,
+                TwelfthSchool=dto.TwelfthSchool,
             }).ToListAsync();
 
             return Ok(new
@@ -67,7 +77,7 @@ namespace CMS.Controllers.AdminController
                 DeptId = dto.DeptId,
                 CurrentSemester = dto.CurrentSemester,
                 StudentImg = dto.StudentImg,
-                StudentId=dto.StudentId
+                StudentId = dto.StudentId
 
             }).ToListAsync();
 
@@ -89,81 +99,162 @@ namespace CMS.Controllers.AdminController
                 return NotFound($"No student with id {id} found.");
             }
 
-            // Check if a new image is provided
-            if (updatestudent.StudentImg != null)
+            try
             {
-                // Delete old image if it exists
-                if (!string.IsNullOrEmpty(student.StudentImg))
+                // --- Handle Student Image ---
+                if (updatestudent.StudentImg != null)
                 {
-                    string oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", student.StudentImg);
-                    if (System.IO.File.Exists(oldImagePath))
+                    // Delete old image if exists
+                    if (!string.IsNullOrEmpty(student.StudentImg))
                     {
-                        try
+                        string oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "studentProfile", student.StudentImg);
+                        if (System.IO.File.Exists(oldImagePath))
                         {
                             System.IO.File.Delete(oldImagePath);
                         }
-                        catch (Exception ex)
+                    }
+
+                    // Save new image
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "studentProfile");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    string newImageName = Guid.NewGuid().ToString() + Path.GetExtension(updatestudent.StudentImg.FileName);
+                    string newFilePath = Path.Combine(uploadsFolder, newImageName);
+
+                    using (var fileStream = new FileStream(newFilePath, FileMode.Create))
+                    {
+                        await updatestudent.StudentImg.CopyToAsync(fileStream);
+                    }
+
+                    student.StudentImg = newImageName;
+                }
+
+                // --- Handle Tenth Marksheet PDF ---
+                if (updatestudent.TenthMarksheet != null)
+                {
+                    // Delete old tenth marksheet if exists
+                    if (!string.IsNullOrEmpty(student.Tenthmarksheet))
+                    {
+                        string oldTenthPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets", student.Tenthmarksheet);
+                        if (System.IO.File.Exists(oldTenthPath))
                         {
-                            return StatusCode(500, new { success = false, message = $"Failed to delete old image: {ex.Message}" });
+                            System.IO.File.Delete(oldTenthPath);
                         }
                     }
+
+                    // Save new tenth marksheet using original filename (no rename)
+                    string tenthFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets");
+                    Directory.CreateDirectory(tenthFolder);
+
+                    string tenthFilePath = Path.Combine(tenthFolder, updatestudent.TenthMarksheet.FileName);
+
+                    using (var stream = new FileStream(tenthFilePath, FileMode.Create))
+                    {
+                        await updatestudent.TenthMarksheet.CopyToAsync(stream);
+                    }
+
+                    student.Tenthmarksheet = updatestudent.TenthMarksheet.FileName;
                 }
 
-                // Save the new image
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students");
-                Directory.CreateDirectory(uploadsFolder); // Ensure folder exists
-
-                string newImageName = Guid.NewGuid().ToString() + Path.GetExtension(updatestudent.StudentImg.FileName);
-                string newFilePath = Path.Combine(uploadsFolder, newImageName);
-
-                using (var fileStream = new FileStream(newFilePath, FileMode.Create))
+                // --- Handle Twelfth Marksheet PDF ---
+                if (updatestudent.TwelfthMarksheet != null)
                 {
-                    await updatestudent.StudentImg.CopyToAsync(fileStream);
+                    // Delete old twelfth marksheet if exists
+                    if (!string.IsNullOrEmpty(student.TwelfthMarksheet))
+                    {
+                        string oldTwelfthPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets", student.TwelfthMarksheet);
+                        if (System.IO.File.Exists(oldTwelfthPath))
+                        {
+                            System.IO.File.Delete(oldTwelfthPath);
+                        }
+                    }
+
+                    // Save new twelfth marksheet using original filename (no rename)
+                    string twelfthFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets");
+                    Directory.CreateDirectory(twelfthFolder);
+
+                    string twelfthFilePath = Path.Combine(twelfthFolder, updatestudent.TwelfthMarksheet.FileName);
+
+                    using (var stream = new FileStream(twelfthFilePath, FileMode.Create))
+                    {
+                        await updatestudent.TwelfthMarksheet.CopyToAsync(stream);
+                    }
+
+                    student.TwelfthMarksheet = updatestudent.TwelfthMarksheet.FileName;
                 }
 
-                student.StudentImg = newImageName; // Update the StudentImg field
-            }
+                // --- Update other student fields ---
+                student.StudentName = updatestudent.StudentName;
+                student.Email = updatestudent.Email;
+                student.Dob = updatestudent.Dob;
+                student.Gender = updatestudent.Gender;
+                student.Address = updatestudent.Address;
+                student.City = updatestudent.City;
+                student.State = updatestudent.State;
+                student.Phone = updatestudent.Phone;
+                student.DeptId = updatestudent.DeptId;
+                student.CurrentSemester = updatestudent.CurrentSemester;
+                student.TenthPassingYear = updatestudent.TenthPassingYear;
+                student.TenthPercentage = updatestudent.TenthPercentage;
+                student.TenthSchool = updatestudent.TenthSchool;
+                student.TwelfthPassingYear = updatestudent.TwelfthPassingYear;
+                student.TwelfthPercentage = updatestudent.TwelfthPercentage;
+                student.TwelfthSchool = updatestudent.TwelfthSchool;
 
-            // Update the rest of the student fields
-            student.StudentName = updatestudent.StudentName;
-            student.Email = updatestudent.Email;
-            student.Dob = updatestudent.Dob;
-            student.Gender = updatestudent.Gender;
-            student.Address = updatestudent.Address;
-            student.City = updatestudent.City;
-            student.State = updatestudent.State;
-            student.Phone = updatestudent.Phone;
-            student.DeptId = updatestudent.DeptId;
-            student.CurrentSemester = updatestudent.CurrentSemester;
-
-            try
-            {
                 await _context.SaveChangesAsync();
-                return NoContent(); // No content as a response when update is successful
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error updating student: {ex.Message}");
-            }
-        }
 
-
-        [HttpDelete("deleteStudent/{id}")]
-        public async Task<IActionResult> deleteStudent(int id)
-        {
-            var student = await _context.Students.FindAsync(id);
-            try
-            {
-                _context.Students.Remove(student);
-                await _context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error Deleting Faculty: {ex.Message}");
+                return StatusCode(500, $"Error updating student: {ex.InnerException}");
             }
-
         }
 
+
+
+        [HttpDelete("deleteStudent/{id}")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            try
+            {
+                var student = await _context.Students.FindAsync(id);
+                if (student == null)
+                    return NotFound(new { success = false, message = "Student not found." });
+
+                // Delete Student Image
+                if (!string.IsNullOrEmpty(student.StudentImg))
+                {
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "studentProfile", student.StudentImg);
+                    if (System.IO.File.Exists(imagePath))
+                        System.IO.File.Delete(imagePath);
+                }
+
+                // Delete 10th Marksheet
+                if (!string.IsNullOrEmpty(student.Tenthmarksheet))
+                {
+                    string tenthPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets", student.Tenthmarksheet);
+                    if (System.IO.File.Exists(tenthPath))
+                        System.IO.File.Delete(tenthPath);
+                }
+
+                // Delete 12th Marksheet
+                if (!string.IsNullOrEmpty(student.TwelfthMarksheet))
+                {
+                    string twelfthPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets", student.TwelfthMarksheet);
+                    if (System.IO.File.Exists(twelfthPath))
+                        System.IO.File.Delete(twelfthPath);
+                }
+
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Student deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

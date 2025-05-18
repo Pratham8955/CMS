@@ -106,6 +106,7 @@ namespace CMS.Controllers.AdminController
             {
                 student.StudentId,
                 student.StudentName,
+                student.CurrentSemester,
                 Fees = _context.StudentFees
                 .Where(fee => fee.StudentId == student.StudentId)
                 .Select(fee => new
@@ -118,7 +119,7 @@ namespace CMS.Controllers.AdminController
                     fee.TransactionId,
                     fee.PaymentDate
                 })
-                .FirstOrDefault()
+                 .ToList()
             }).ToListAsync();
             return Ok(new { success = true, data = payments });
         }

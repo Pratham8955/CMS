@@ -15,5 +15,20 @@
         public int CurrentSemester { get; set; }
         public int GroupId { get; set; }
         public string? StudentImg { get; set; }
+        public string? TenthSchool { get; set; }
+
+        public int? TenthPassingYear { get; set; }
+
+        public decimal? TenthPercentage { get; set; }
+
+        public string? Tenthmarksheet { get; set; }
+
+        public string? TwelfthSchool { get; set; }
+
+        public int? TwelfthPassingYear { get; set; }
+
+        public decimal? TwelfthPercentage { get; set; }
+
+        public string? TwelfthMarksheet { get; set; }
     }
 }

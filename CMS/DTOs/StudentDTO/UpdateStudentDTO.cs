@@ -36,6 +36,23 @@ namespace CMS.DTOs.StudentDTO
 
         [Required]
         public IFormFile StudentImg { get; set; } = null!;
+        [Required]
+        public IFormFile? TenthMarksheet { get; set; }
+        [Required]
+        public IFormFile? TwelfthMarksheet { get; set; }
+        [Required]
+        public int? TenthPassingYear { get; set; }
+        [Required]
+        public decimal? TenthPercentage { get; set; }
+        [Required]
+        public string? TenthSchool { get; set; }
+        [Required]
+
+        public int? TwelfthPassingYear { get; set; }
+        [Required]
+        public decimal? TwelfthPercentage { get; set; }
+        [Required]
+        public string? TwelfthSchool { get; set; }
 
     }
 }

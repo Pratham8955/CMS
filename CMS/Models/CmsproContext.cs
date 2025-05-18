@@ -32,6 +32,8 @@ public partial class CmsproContext : DbContext
 
     public virtual DbSet<GroupMaster> GroupMasters { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Semester> Semesters { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
@@ -222,6 +224,18 @@ public partial class CmsproContext : DbContext
                 .HasColumnName("role");
         });
 
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC0707C12930");
+
+            entity.Property(e => e.SentDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Student).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Notifications_Students");
+        });
+
         modelBuilder.Entity<Semester>(entity =>
         {
             entity.HasKey(e => e.SemId).HasName("PK__semester__DF18841225869641");
@@ -268,12 +282,31 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.State)
                 .HasMaxLength(20)
                 .HasColumnName("state");
-            entity.Property(e => e.StudentImg)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.StudentImg).HasMaxLength(50);
             entity.Property(e => e.StudentName)
                 .HasMaxLength(100)
                 .HasColumnName("studentName");
+            entity.Property(e => e.TenthPassingYear).HasColumnName("tenthPassingYear");
+            entity.Property(e => e.TenthPercentage)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("tenthPercentage");
+            entity.Property(e => e.TenthSchool)
+                .HasMaxLength(50)
+                .HasColumnName("tenthSchool");
+            entity.Property(e => e.Tenthmarksheet)
+                .HasMaxLength(50)
+                .HasColumnName("tenthmarksheet");
+            entity.Property(e => e.TwelfthMarksheet)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("twelfthMarksheet");
+            entity.Property(e => e.TwelfthPassingYear).HasColumnName("twelfthPassingYear");
+            entity.Property(e => e.TwelfthPercentage)
+                .HasColumnType("decimal(18, 0)")
+                .HasColumnName("twelfthPercentage");
+            entity.Property(e => e.TwelfthSchool)
+                .HasMaxLength(50)
+                .HasColumnName("twelfthSchool");
 
             entity.HasOne(d => d.CurrentSemesterNavigation).WithMany(p => p.Students)
                 .HasForeignKey(d => d.CurrentSemester)

@@ -33,11 +33,29 @@ public partial class Student
 
     public string? StudentImg { get; set; }
 
+    public string? TenthSchool { get; set; }
+
+    public int? TenthPassingYear { get; set; }
+
+    public decimal? TenthPercentage { get; set; }
+
+    public string? Tenthmarksheet { get; set; }
+
+    public string? TwelfthSchool { get; set; }
+
+    public int? TwelfthPassingYear { get; set; }
+
+    public decimal? TwelfthPercentage { get; set; }
+
+    public string? TwelfthMarksheet { get; set; }
+
     public virtual Semester CurrentSemesterNavigation { get; set; } = null!;
 
     public virtual Department Dept { get; set; } = null!;
 
     public virtual GroupMaster Group { get; set; } = null!;
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<StudentFee> StudentFees { get; set; } = new List<StudentFee>();
 }

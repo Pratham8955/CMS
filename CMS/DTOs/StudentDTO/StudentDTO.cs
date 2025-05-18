@@ -40,6 +40,31 @@ namespace CMS.DTOs.StudentDTO
         [Required]
         public IFormFile StudentImg { get; set; } = null!;
 
+        // ✅ Now Required
+        [Required(ErrorMessage = "10th marksheet is required.")]
+        public IFormFile TenthMarksheet { get; set; } = null!;
+
+        [Required(ErrorMessage = "12th marksheet is required.")]
+        public IFormFile TwelfthMarksheet { get; set; } = null!;
+
+        [Required]
+        public string TenthSchool { get; set; } = null!;
+
+        [Required]
+        public int TenthPassingYear { get; set; }
+
+        [Required]
+        public decimal TenthPercentage { get; set; }
+
+        [Required]
+        public string TwelfthSchool { get; set; } = null!;
+
+        [Required]
+        public int TwelfthPassingYear { get; set; }
+
+        [Required]
+        public decimal TwelfthPercentage { get; set; }
+
 
     }
 }
