@@ -23,13 +23,24 @@ namespace CMS.Controllers.AdminController
         [HttpPost("addStudentFeeType")]
         public async Task<IActionResult> AddStudentFeeType([FromBody] StudentFeesTypeDTO dto)
         {
-
             var feeStructure = await _context.FeeStructures
-                                              .FirstOrDefaultAsync(fs => fs.FeeStructureId == dto.FeeStructureId);
+                                             .FirstOrDefaultAsync(fs => fs.FeeStructureId == dto.FeeStructureId);
 
             if (feeStructure == null)
             {
                 return BadRequest(new { success = false, message = "Fee Structure not found." });
+            }
+
+            // Check for existing StudentFeesType
+            var existingFeeType = await _context.StudentFeesTypes
+                                                .FirstOrDefaultAsync(ft => ft.FeeStructureId == dto.FeeStructureId);
+            if (existingFeeType != null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Fee Type for this Fee Structure already exists."
+                });
             }
 
             decimal totalAmount = feeStructure.DefaultAmount;
@@ -38,7 +49,6 @@ namespace CMS.Controllers.AdminController
             decimal labFees = totalAmount * 0.20m;
             decimal collegeGroundFee = totalAmount * 0.15m;
             decimal internalExam = totalAmount * 0.15m;
-
 
             if (tuitionFees + labFees + collegeGroundFee + internalExam != totalAmount)
             {
@@ -76,6 +86,7 @@ namespace CMS.Controllers.AdminController
                 }
             });
         }
+
 
 
         // GET ALL

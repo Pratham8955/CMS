@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CMS.DTOs.GroupMasterDTO;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace CMS.Controllers.AdminController
 {
@@ -128,6 +129,8 @@ namespace CMS.Controllers.AdminController
             HttpContext.Session.SetString("otp", otp);
             HttpContext.Session.SetString("otpEmail", sendOtpDto.Email);
 
+
+
             bool emailSent = await SendEmail(sendOtpDto.Email, otp);
 
             if (!emailSent)
@@ -191,6 +194,7 @@ namespace CMS.Controllers.AdminController
         {
             var sessionOtp = HttpContext.Session.GetString("otp");
             var sessionEmail = HttpContext.Session.GetString("otpEmail");
+            Console.WriteLine($"[STORE OTP] OTP Stored: {sessionOtp}, Email: {sessionEmail}");
 
             if (sessionOtp == null || sessionEmail == null || sessionOtp != verifyOtpDto.Otp || sessionEmail != verifyOtpDto.Email)
             {

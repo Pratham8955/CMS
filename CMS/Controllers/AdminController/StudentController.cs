@@ -48,6 +48,7 @@ namespace CMS.Controllers.AdminController
                 TwelfthPassingYear=dto.TwelfthPassingYear,
                 TwelfthPercentage=dto.TwelfthPercentage,
                 TwelfthSchool=dto.TwelfthSchool,
+                depname=dto.Dept.DeptName
             }).ToListAsync();
 
             return Ok(new
@@ -77,7 +78,16 @@ namespace CMS.Controllers.AdminController
                 DeptId = dto.DeptId,
                 CurrentSemester = dto.CurrentSemester,
                 StudentImg = dto.StudentImg,
-                StudentId = dto.StudentId
+                StudentId = dto.StudentId,
+                TenthPassingYear = dto.TenthPassingYear,
+                TenthPercentage = dto.TenthPercentage,
+                TenthSchool = dto.TenthSchool,
+                Tenthmarksheet = dto.Tenthmarksheet,
+                TwelfthMarksheet = dto.TwelfthMarksheet,
+                TwelfthPassingYear = dto.TwelfthPassingYear,
+                TwelfthPercentage = dto.TwelfthPercentage,
+                TwelfthSchool = dto.TwelfthSchool,
+                depname=dto.Dept.DeptName
 
             }).ToListAsync();
 

@@ -30,5 +30,6 @@
         public decimal? TwelfthPercentage { get; set; }
 
         public string? TwelfthMarksheet { get; set; }
+        public string? depname { get; set; }
     }
 }

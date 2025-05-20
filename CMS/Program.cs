@@ -21,8 +21,8 @@ builder.Services.AddSession(op =>
     op.IdleTimeout = TimeSpan.FromMinutes(5);
     op.Cookie.HttpOnly = true;
     op.Cookie.IsEssential = true;
-    op.Cookie.SameSite = SameSiteMode.Lax; // Changed to Lax for better compatibility
-    op.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    op.Cookie.SameSite = SameSiteMode.None; 
+    op.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // JWT Authentication
@@ -47,14 +47,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(
-            "http://localhost:3000",
+        policy.WithOrigins("http://localhost:3000",
             "http://10.0.2.2:5291",   // HTTP for Android
-            "https://10.0.2.2:7133"  // HTTPS for Android
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials());
+            "https://10.0.2.2:7133", "http://192.168.244.115:5291") // HTTPS for Android)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
 
 var app = builder.Build();
@@ -70,6 +68,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 app.UseSession();

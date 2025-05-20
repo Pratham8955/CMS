@@ -28,7 +28,9 @@ namespace CMS.Controllers.AdminController
                 DeptId = fs.DeptId,
                 SemId = fs.SemId,
                 DefaultAmount = fs.DefaultAmount,
-                FeeStructureDescription = fs.FeeStructureDescription
+                FeeStructureDescription = fs.FeeStructureDescription,
+                FeeStructureId=fs.FeeStructureId,
+                
 
             }).ToListAsync();
 
@@ -39,6 +41,30 @@ namespace CMS.Controllers.AdminController
                 FeeStruct = feeStruct,
             });
         }
+
+        [HttpGet("getUnassignedFeeStructures")]
+        public async Task<IActionResult> GetUnassignedFeeStructures()
+        {
+            var unassignedFeeStructures = await _context.FeeStructures
+                .Where(fs => !_context.StudentFeesTypes.Any(ft => ft.FeeStructureId == fs.FeeStructureId))
+                .Select(fs => new
+                {
+                     fs.DeptId,
+                     fs.SemId,
+                     fs.DefaultAmount,
+                    fs.FeeStructureDescription,
+                    fs.FeeStructureId,
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Unassigned Fee Structures fetched successfully",
+                data = unassignedFeeStructures
+            });
+        }
+
 
 
         [HttpGet("getFeeStructurebydepandsem/{deptId}/{currentSemester}")]
@@ -139,6 +165,7 @@ namespace CMS.Controllers.AdminController
                 message = "Fee Structure Added Successfully",
                 FeeStruct = new
                 {
+                    
                     feeStruct.DeptId,
                     feeStruct.SemId,
                     feeStruct.DefaultAmount,
