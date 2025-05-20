@@ -146,6 +146,32 @@ namespace CMS.Controllers.AdminController
                 Subject = subject,
             });
         }
+        
+        [HttpGet("GetSubjectsByStudentonly/{id}")]
+        public async Task<IActionResult> GetSubjectsByStudentonly(int id)
+        {
+            var students = await _context.Students.FindAsync(id);
+
+            if (students == null) {
+                return NotFound($"Students with Id {id} Not Found");
+            }
+            var studepid = students.DeptId;
+            var studepsem = students.CurrentSemester;
+
+            var subject = await _context.Subjects.Where(sc => sc.DeptId == studepid && sc.SemId == studepsem).Select(s => new 
+            {
+                SubjectId = s.SubjectId,
+                SubjectName = s.SubjectName,
+                 s.Dept.DeptName,
+                SemId = s.SemId
+            }).ToListAsync();
+            return Ok(new
+            {
+                success = true,
+                message = "Subjects fetch successfully.",
+                Subject = subject,
+            });
+        }
     }
 
 }

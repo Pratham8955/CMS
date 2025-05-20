@@ -94,11 +94,13 @@ namespace CMS.Controllers.FacultyController
             int studepid = student.DeptId;
             int stusemid = student.CurrentSemester;
 
-            var content = await _context.CourseContents.Include(cc => cc.Subject).Where(cc => cc.Subject.DeptId == studepid && cc.Subject.SemId == stusemid).Select(cc => new ViewCourseContent
+            var content = await _context.CourseContents.Include(cc => cc.Subject).Where(cc => cc.Subject.DeptId == studepid && cc.Subject.SemId == stusemid).Select(cc => new 
             {
                 SubjectId = cc.SubjectId,
                 Title = cc.Title,
-                FilePath = cc.FilePath
+                FilePath = cc.FilePath,
+                cc.Subject.SubjectName
+                
             }).ToListAsync();
 
             return Ok(new

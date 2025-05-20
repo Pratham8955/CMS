@@ -334,6 +334,42 @@ namespace CMS.Controllers.AdminController
         }
 
 
+        [HttpGet("GetFacultyBystudentId/{id}")]
+        public async Task<IActionResult> GetFacultyBystudentId(int id)
+        {
+            var stud = await _context.Students.FindAsync(id);
+            if (stud == null)
+            {
+                return NotFound($"Student with Id {id} not found");
+            }
+
+            var studdep = stud.DeptId;
+
+            var faculty = await _context.Faculties
+                .Where(f => f.DeptId == studdep)
+                .Select(f => new
+                {
+                    f.FacultyId,
+                    f.FacultyName,
+                    f.Email,
+                    f.Gender
+                }).ToListAsync();
+
+            if (!faculty.Any())
+            {
+                return NotFound($"No faculty found for department Id {studdep}");
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Faculty fetched successfully.",
+                faculty = faculty,
+            });
+        }
+
+
+
 
     }
 }

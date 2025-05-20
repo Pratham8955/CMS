@@ -119,6 +119,15 @@ namespace CMS.Controllers.AdminController
             {
                 return Conflict(new { success = false, message = "Faculty is already assigned to this subject." });
             }
+
+            var subjectAlreadyAssigned = await _context.FacultySubjects
+       .AnyAsync(fs => fs.SubjectId == model.SubjectId && fs.SemId == model.SemId);
+
+            if (subjectAlreadyAssigned)
+            {
+                return Conflict(new { success = false, message = "This subject is already assigned to another faculty for this semester." });
+            }
+
             if (model.FacultyId == null || model.SubjectId == null || model.SemId == 0)
                 return BadRequest(new { success = false, message = "Invalid input" });
 
