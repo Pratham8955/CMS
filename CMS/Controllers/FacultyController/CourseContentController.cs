@@ -2,6 +2,7 @@
 using CMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Controllers.FacultyController
@@ -94,13 +95,13 @@ namespace CMS.Controllers.FacultyController
             int studepid = student.DeptId;
             int stusemid = student.CurrentSemester;
 
-            var content = await _context.CourseContents.Include(cc => cc.Subject).Where(cc => cc.Subject.DeptId == studepid && cc.Subject.SemId == stusemid).Select(cc => new 
+            var content = await _context.CourseContents.Include(cc => cc.Subject).Where(cc => cc.Subject.DeptId == studepid && cc.Subject.SemId == stusemid).Select(cc => new
             {
-                SubjectId = cc.SubjectId,
-                Title = cc.Title,
-                FilePath = cc.FilePath,
+                cc.SubjectId,
+                cc.Title,
+                cc.FilePath,
                 cc.Subject.SubjectName
-                
+
             }).ToListAsync();
 
             return Ok(new
@@ -110,6 +111,64 @@ namespace CMS.Controllers.FacultyController
                 Content = content,
             });
         }
+
+        [HttpGet("GetByIdforFaculty/{id}")]
+        public async Task<IActionResult> GetByIdforFaculty(int id)
+        {
+            try
+            {
+                var facultyExists = await _context.Faculties.AnyAsync(f => f.FacultyId == id);
+                if (!facultyExists)
+                {
+                    return NotFound("Faculty not found.");
+                }
+
+               
+                var content = await (from cc in _context.CourseContents
+                                     join fs in _context.FacultySubjects
+                                         on cc.SubjectId equals fs.SubjectId
+                                     join s in _context.Subjects
+                                         on cc.SubjectId equals s.SubjectId
+                                     where fs.FacultyId == id
+                                     select new
+                                     {
+                                         cc.SubjectId,
+                                         cc.Title,
+                                         cc.FilePath,
+                                         SubjectName = s.SubjectName,
+                                         cc.UploadDate,
+                                         cc.Description
+                                     }).ToListAsync();
+
+                if (content == null || !content.Any())
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "No subjects assigned to this faculty.",
+                        Content = new List<object>()
+                    });
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Faculty content fetched successfully.",
+                    Content = content
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred: " + ex.Message
+                });
+            }
+        }
+
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromForm] CourseContentDTO dto)

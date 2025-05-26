@@ -52,8 +52,13 @@ builder.Services.AddCors(options =>
             "https://10.0.2.2:7133", "http://192.168.244.115:5291") // HTTPS for Android)
               .AllowAnyMethod()
               .AllowAnyHeader()
+
               .AllowCredentials());
 });
+
+
+
+
 
 var app = builder.Build();
 
@@ -72,6 +77,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
+
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();

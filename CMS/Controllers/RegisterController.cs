@@ -241,7 +241,7 @@ namespace CMS.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = ex.InnerException });
             }
         }
 

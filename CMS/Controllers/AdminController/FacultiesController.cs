@@ -35,7 +35,7 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> GetFaculties()
         {
-            var faculty = await _context.Faculties.Select(f => new
+            var faculty = await _context.Faculties.Where(fe=>fe.FacultyName!="Admin").Select(f => new
             {
                 f.FacultyId,
                 f.FacultyName,
