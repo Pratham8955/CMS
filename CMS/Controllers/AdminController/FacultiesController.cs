@@ -261,7 +261,23 @@ namespace CMS.Controllers.AdminController
             try
             {
                 await _context.SaveChangesAsync();
-                return NoContent(); // No content as a response when update is successful
+                return Ok(new
+                {
+                    success = true,
+                    message = "Faculty updated successfully",
+                    faculty = new
+                    {
+                        faculty.FacultyId,
+                        faculty.FacultyName,
+                        faculty.Email,
+                        faculty.Doj,
+                        faculty.Gender,
+                        faculty.Qualification,
+                        faculty.Experience,
+                        faculty.DeptId,
+                        FacultyImgUrl = Url.Content($"~/uploads/Faculty/{faculty.FacultyImg}")
+                    }
+                }); 
             }
             catch (Exception ex)
             {

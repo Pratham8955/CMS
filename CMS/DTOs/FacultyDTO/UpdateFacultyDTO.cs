@@ -23,8 +23,7 @@ namespace CMS.DTOs.FacultyDTO
         [Required]
         public int DeptId { get; set; }
 
+        public IFormFile? FacultyImg { get; set; }
 
-        [Required]
-        public IFormFile FacultyImg { get; set; } = null!;
     }
 }
