@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol.Plugins;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace CMS.Controllers.AdminController
 {
@@ -156,14 +157,17 @@ namespace CMS.Controllers.AdminController
                     string tenthFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets");
                     Directory.CreateDirectory(tenthFolder);
 
-                    string tenthFilePath = Path.Combine(tenthFolder, updatestudent.TenthMarksheet.FileName);
+                    string tenthFilePath = Path.GetFileNameWithoutExtension(updatestudent.TenthMarksheet.FileName)
+                                           + "_" + DateTime.Now.Ticks
+                                           + Path.GetExtension(updatestudent.TenthMarksheet.FileName);
 
-                    using (var stream = new FileStream(tenthFilePath, FileMode.Create))
+                    string tenthpath = Path.Combine(tenthFolder, tenthFilePath);
+                    using (var stream = new FileStream(tenthpath, FileMode.Create))
                     {
                         await updatestudent.TenthMarksheet.CopyToAsync(stream);
                     }
 
-                    student.Tenthmarksheet = updatestudent.TenthMarksheet.FileName;
+                    student.Tenthmarksheet = tenthFilePath;
                 }
 
                 // --- Handle Twelfth Marksheet PDF ---
@@ -183,14 +187,16 @@ namespace CMS.Controllers.AdminController
                     string twelfthFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "students", "marksheets");
                     Directory.CreateDirectory(twelfthFolder);
 
-                    string twelfthFilePath = Path.Combine(twelfthFolder, updatestudent.TwelfthMarksheet.FileName);
-
-                    using (var stream = new FileStream(twelfthFilePath, FileMode.Create))
+                    string twelfthFilePath = Path.GetFileNameWithoutExtension(updatestudent.TwelfthMarksheet.FileName)
+                                           + "_" + DateTime.Now.Ticks
+                                           + Path.GetExtension(updatestudent.TwelfthMarksheet.FileName);
+                    string twelfthpath = Path.Combine(twelfthFolder, twelfthFilePath);
+                    using (var stream = new FileStream(twelfthpath, FileMode.Create))
                     {
                         await updatestudent.TwelfthMarksheet.CopyToAsync(stream);
                     }
 
-                    student.TwelfthMarksheet = updatestudent.TwelfthMarksheet.FileName;
+                    student.TwelfthMarksheet = twelfthFilePath;
                 }
 
                 // --- Update other student fields ---

@@ -34,11 +34,11 @@ namespace CMS.DTOs.StudentDTO
         [Required]
         public int CurrentSemester { get; set; }
 
-        [Required]
-        public IFormFile StudentImg { get; set; } = null!;
-        [Required]
+      
+        public IFormFile? StudentImg { get; set; } 
+       
         public IFormFile? TenthMarksheet { get; set; }
-        [Required]
+        
         public IFormFile? TwelfthMarksheet { get; set; }
         [Required]
         public int? TenthPassingYear { get; set; }

@@ -9,7 +9,7 @@
 
         public string? Description { get; set; }
 
-        public IFormFile PdfFile { get; set; } = null!;  
+        public IFormFile? PdfFile { get; set; }   
 
         public int FacultyId { get; set; }
     }

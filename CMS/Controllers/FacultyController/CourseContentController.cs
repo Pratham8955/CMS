@@ -137,7 +137,8 @@ namespace CMS.Controllers.FacultyController
                                          cc.FilePath,
                                          SubjectName = s.SubjectName,
                                          cc.UploadDate,
-                                         cc.Description
+                                         cc.Description,
+                                         cc.ContentId
                                      }).ToListAsync();
 
                 if (content == null || !content.Any())

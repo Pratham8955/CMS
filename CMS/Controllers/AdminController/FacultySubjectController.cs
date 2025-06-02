@@ -27,11 +27,17 @@ namespace CMS.Controllers.AdminController
 
         public async Task<IActionResult> GetFacultySubjects()
         {
-            var Facsubject = await _context.FacultySubjects.Select(s => new FacultySubjectsDTO
+            var Facsubject = await _context.FacultySubjects.Select(s => new 
             {
                 FacultyId = s.FacultyId,
                 SubjectId = s.SubjectId,
                 SemId = s.SemId,
+                depname=s.Subject.Dept.DeptName,
+                s.FacultySubjectId,
+                s.Faculty.FacultyName,
+                s.Subject.SubjectName,
+                s.Subject.DeptId
+
             }).ToListAsync();
             return Ok(new
             {
