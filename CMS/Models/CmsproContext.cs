@@ -6,16 +6,13 @@ namespace CMS.Models;
 
 public partial class CmsproContext : DbContext
 {
-    private IConfiguration _configuration;
-    public CmsproContext(IConfiguration configuration)
+    public CmsproContext()
     {
-        _configuration = configuration;
     }
 
-    public CmsproContext(DbContextOptions<CmsproContext> options, IConfiguration configuration)
+    public CmsproContext(DbContextOptions<CmsproContext> options)
         : base(options)
     {
-        _configuration = configuration;
     }
 
     public virtual DbSet<CourseContent> CourseContents { get; set; }
@@ -46,7 +43,7 @@ public partial class CmsproContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbCon"));
+        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-L93QS3JL\\SQLEXPRESS;Initial Catalog=CMSPro;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -207,6 +204,9 @@ public partial class CmsproContext : DbContext
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
+            entity.Property(e => e.Subject)
+                .HasMaxLength(60)
+                .HasColumnName("subject");
             entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("(sysdatetime())")
                 .HasColumnName("timestamp");

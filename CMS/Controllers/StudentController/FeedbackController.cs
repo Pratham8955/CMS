@@ -27,6 +27,7 @@ namespace CMS.Controllers.StudentController
                 FeedbackId = feedback.FeedbackId,
                 Name = feedback.Name,
                 Email = feedback.Email,
+                Subject=feedback.Subject,
                 Message = feedback.Message,
                 Timestamp = feedback.Timestamp,
             }).ToListAsync();
@@ -48,8 +49,9 @@ namespace CMS.Controllers.StudentController
             {
                 Name = feedback.Name,
                 Email = feedback.Email,
+                Subject=feedback.Subject,
                 Message = feedback.Message,
-                Timestamp = DateTime.Now,
+                Timestamp = feedback.Timestamp,
             };
 
             _context.Feedbacks.Add(addfeedback);
@@ -73,6 +75,7 @@ namespace CMS.Controllers.StudentController
             }
             updatefeedback.Name = feedback.Name;
             updatefeedback.Email = feedback.Email;
+            updatefeedback.Subject = feedback.Subject;
             updatefeedback.Message = feedback.Message;
             updatefeedback.Timestamp = DateTime.Now;
 

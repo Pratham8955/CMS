@@ -11,6 +11,8 @@ public partial class Feedback
 
     public string Email { get; set; } = null!;
 
+    public string Subject { get; set; } = null!;
+
     public string Message { get; set; } = null!;
 
     public DateTime? Timestamp { get; set; }
