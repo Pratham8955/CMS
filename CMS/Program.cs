@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using CMS.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -43,38 +43,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ✅ CORS Policy Update:
+// ✅ Production-ready CORS Policy:
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:3000",
-            "http://10.0.2.2:5291",   // HTTP for Android
-            "https://10.0.2.2:7133", "http://192.168.244.115:5291") // HTTPS for Android)
+        policy.SetIsOriginAllowed(_ => true) // Allows localhost, Vercel, Netlify, mobile
               .AllowAnyMethod()
               .AllowAnyHeader()
-
               .AllowCredentials());
 });
 
-
-
-
-
 var app = builder.Build();
 
-// ✅ Add URLs for HTTP and HTTPS both:
-app.Urls.Add("http://*:5291");
-app.Urls.Add("https://*:7133");
-
-// Configure the HTTP request pipeline.
+// Bind local ports only in development
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.Urls.Add("http://*:5291");
+    app.Urls.Add("https://*:7133");
 }
 
+// Enable Swagger in all environments for API testing
+app.UseSwagger();
+app.UseSwaggerUI();
 
-//app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 
