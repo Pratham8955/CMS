@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -84,16 +84,24 @@ namespace CMS.Controllers
                     .Replace("{{Email}}", toEmail)
                     .Replace("{{Password}}", plainPassword);
 
-                using var smtp = new SmtpClient("smtp.gmail.com")
+                var smtpHost = _configuration["EmailSettings:SmtpHost"] ?? "smtp.gmail.com";
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
+                var senderEmail = _configuration["EmailSettings:SenderEmail"] ?? "";
+                var senderPassword = (_configuration["EmailSettings:SenderPassword"] ?? "").Replace(" ", "");
+                var senderName = _configuration["EmailSettings:SenderName"] ?? "College Management System";
+                var enableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"] ?? "true");
+
+                using var smtp = new SmtpClient(smtpHost, smtpPort)
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential("salipratham033@gmail.com", "zlbd txsz xmso uswe"),
-                    EnableSsl = true,
+                    EnableSsl = enableSsl,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(senderEmail, senderPassword),
+                    DeliveryMethod = SmtpDeliveryMethod.Network
                 };
 
                 var mailMsg = new MailMessage
                 {
-                    From = new MailAddress("salipratham033@gmail.com"),
+                    From = new MailAddress(senderEmail, senderName),
                     Subject = "Your Student Login Credentials",
                     Body = emailBody,
                     IsBodyHtml = true,
@@ -103,8 +111,13 @@ namespace CMS.Controllers
                 await smtp.SendMailAsync(mailMsg);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[Email Error] Failed to send student email: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[Email Inner Error] {ex.InnerException.Message}");
+                }
                 return false;
             }
         }

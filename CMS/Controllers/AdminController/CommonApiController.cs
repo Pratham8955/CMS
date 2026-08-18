@@ -1,4 +1,4 @@
-﻿using System.Net.Mail;
+using System.Net.Mail;
 using System.Net;
 using CMS.DTOs.SemesterDTO;
 using CMS.DTOs.StudentDTO;
@@ -161,20 +161,27 @@ namespace CMS.Controllers.AdminController
 
                 emailBody = emailBody.Replace("{{OTP}}", otp);
 
-                using var smtp = new SmtpClient("smtp.gmail.com")
+                var smtpHost = _configuration["EmailSettings:SmtpHost"] ?? "smtp.gmail.com";
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
+                var senderEmail = _configuration["EmailSettings:SenderEmail"] ?? "";
+                var senderPassword = (_configuration["EmailSettings:SenderPassword"] ?? "").Replace(" ", "");
+                var senderName = _configuration["EmailSettings:SenderName"] ?? "College Management System";
+                var enableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"] ?? "true");
+
+                using var smtp = new SmtpClient(smtpHost, smtpPort)
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential("salipratham033@gmail.com", "zlbd txsz xmso uswe"),
-                    EnableSsl = true,
+                    EnableSsl = enableSsl,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(senderEmail, senderPassword),
+                    DeliveryMethod = SmtpDeliveryMethod.Network
                 };
 
                 var mailMsg = new MailMessage
                 {
-                    From = new MailAddress("salipratham033@gmail.com"),
+                    From = new MailAddress(senderEmail, senderName),
                     Subject = "Your OTP code for Reset Password.",
                     Body = emailBody,
                     IsBodyHtml = true,
-
                 };
 
                 mailMsg.To.Add(email);
@@ -183,6 +190,11 @@ namespace CMS.Controllers.AdminController
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[Email Error] Failed to send email: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[Email Inner Error] {ex.InnerException.Message}");
+                }
                 return false;
             }
         }

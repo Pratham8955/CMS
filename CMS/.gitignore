@@ -1,0 +1,76 @@
+# ==========================================
+# ASP.NET Core Backend .gitignore
+# Security, Secrets, Binaries & User Uploads
+# ==========================================
+
+# 1. Build and Compilation Results
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild[Ll]og.*
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# 2. Local Environment Secrets & Sensitive Settings
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.local.json
+appsettings.Secrets.json
+secrets.json
+.env
+.env.*
+!appsettings.example.json
+
+# 3. Dynamic User Uploads (Preserve folder structure via .gitkeep)
+wwwroot/uploads/*
+wwwroot/uploads/**/*
+!wwwroot/uploads/**/.gitkeep
+
+# 4. Certificates, Keys & Security Credentials
+*.pfx
+*.p12
+*.cer
+*.key
+*.pem
+*.snk
+*.publishsettings
+
+# 5. Visual Studio & IDE Artifacts
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# 6. Database and Local Storage Files
+*.mdf
+*.ldf
+*.ndf
+*.db
+*.sqlite
+*.sqlite3
+
+# 7. Diagnostic Logs & Crash Dumps
+*.log
+logs/
+Log/
+[Ll]ogs/
+*.dmp
+*.crash
+mono_crash.*
+
+# 8. Operating System Temporary Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
