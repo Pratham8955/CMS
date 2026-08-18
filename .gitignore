@@ -23,6 +23,10 @@ mono_crash.*
 [Rr]eleases/
 x64/
 x86/
+*.zip
+*.7z
+*.rar
+*.tar.gz
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
@@ -373,4 +377,6 @@ appsettings.Secrets.json
 secrets.json
 .env
 .env.*
+.env.production
+!.env.example
 !appsettings.example.json
